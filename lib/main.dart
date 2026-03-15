@@ -110,7 +110,7 @@ class _WeatherControlPanelState extends State<WeatherControlPanel> {
             Container(
               padding: const EdgeInsets.all(30),
               decoration: BoxDecoration(
-                color: _getWeatherColor().withOpacity(0.2),
+                color: _getWeatherColor().withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: _getWeatherColor(), width: 3),
               ),
