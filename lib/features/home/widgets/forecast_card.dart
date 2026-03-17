@@ -18,7 +18,11 @@ class ForecastCard extends StatelessWidget {
         children: [
           const Text(
             'Прогноз на 5 днів',
-            style: TextStyle(color: AppColors.textDark, fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: AppColors.textDark,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 24),
           LayoutBuilder(
@@ -30,15 +34,35 @@ class ForecastCard extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: const [
-                      _ForecastItem(day: 'Сьогодні', icon: Icons.wb_sunny_outlined, temp: '24°'),
+                      _ForecastItem(
+                        day: 'Сьогодні',
+                        icon: Icons.wb_sunny_outlined,
+                        temp: '24°',
+                      ),
                       SizedBox(width: 16),
-                      _ForecastItem(day: 'Завтра', icon: Icons.cloud_outlined, temp: '22°'),
+                      _ForecastItem(
+                        day: 'Завтра',
+                        icon: Icons.cloud_outlined,
+                        temp: '22°',
+                      ),
                       SizedBox(width: 16),
-                      _ForecastItem(day: 'Середа', icon: Icons.cloudy_snowing, temp: '19°'),
+                      _ForecastItem(
+                        day: 'Середа',
+                        icon: Icons.cloudy_snowing,
+                        temp: '19°',
+                      ),
                       SizedBox(width: 16),
-                      _ForecastItem(day: 'Четвер', icon: Icons.cloud_queue, temp: '21°'),
+                      _ForecastItem(
+                        day: 'Четвер',
+                        icon: Icons.cloud_queue,
+                        temp: '21°',
+                      ),
                       SizedBox(width: 16),
-                      _ForecastItem(day: 'П\'ятниця', icon: Icons.wb_sunny_outlined, temp: '25°'),
+                      _ForecastItem(
+                        day: 'П\'ятниця',
+                        icon: Icons.wb_sunny_outlined,
+                        temp: '25°',
+                      ),
                     ],
                   ),
                 ),
@@ -56,17 +80,31 @@ class _ForecastItem extends StatelessWidget {
   final IconData icon;
   final String temp;
 
-  const _ForecastItem({required this.day, required this.icon, required this.temp});
+  const _ForecastItem({
+    required this.day,
+    required this.icon,
+    required this.temp,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(day, style: const TextStyle(color: AppColors.textGrey, fontSize: 14)),
+        Text(
+          day,
+          style: const TextStyle(color: AppColors.textGrey, fontSize: 14),
+        ),
         const SizedBox(height: 12),
         Icon(icon, color: AppColors.textDark, size: 32),
         const SizedBox(height: 12),
-        Text(temp, style: const TextStyle(color: AppColors.textDark, fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(
+          temp,
+          style: const TextStyle(
+            color: AppColors.textDark,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }

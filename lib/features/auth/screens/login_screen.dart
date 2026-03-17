@@ -27,7 +27,11 @@ class LoginScreen extends StatelessWidget {
                       color: AppColors.cardWhite,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
-                        BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 4)),
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 20,
+                          offset: const Offset(0, 4),
+                        ),
                       ],
                     ),
                     child: Column(
@@ -35,7 +39,8 @@ class LoginScreen extends StatelessWidget {
                       children: [
                         const AuthHeader(
                           title: 'З поверненням!',
-                          subtitle: 'Увійдіть, щоб переглянути свої збережені локації.',
+                          subtitle:
+                              'Увійдіть, щоб переглянути свої збережені локації.',
                         ),
                         const SizedBox(height: 32),
                         const CustomTextField(
@@ -51,8 +56,14 @@ class LoginScreen extends StatelessWidget {
                           isPassword: true,
                           trailing: TextButton(
                             onPressed: () {},
-                            style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero),
-                            child: const Text('Забули пароль?', style: TextStyle(color: AppColors.primaryBlue)),
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                            ),
+                            child: const Text(
+                              'Забули пароль?',
+                              style: TextStyle(color: AppColors.primaryBlue),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 32),
@@ -64,12 +75,20 @@ class LoginScreen extends StatelessWidget {
                               backgroundColor: AppColors.primaryBlue,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: const [
-                                Text('Увійти', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                Text(
+                                  'Увійти',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                                 SizedBox(width: 8),
                                 Icon(Icons.arrow_forward, size: 20),
                               ],
@@ -80,15 +99,27 @@ class LoginScreen extends StatelessWidget {
                         Wrap(
                           alignment: WrapAlignment.center,
                           children: [
-                            const Text('Немає акаунту? ', style: TextStyle(color: AppColors.textGrey)),
+                            const Text(
+                              'Немає акаунту? ',
+                              style: TextStyle(color: AppColors.textGrey),
+                            ),
                             GestureDetector(
                               onTap: () {
                                 Navigator.pushReplacement(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const RegisterScreen(),
+                                  ),
                                 );
                               },
-                              child: const Text('Зареєструватися', style: TextStyle(color: AppColors.primaryBlue, fontWeight: FontWeight.bold)),
+                              child: const Text(
+                                'Зареєструватися',
+                                style: TextStyle(
+                                  color: AppColors.primaryBlue,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -101,7 +132,10 @@ class LoginScreen extends StatelessWidget {
           ),
           const Padding(
             padding: EdgeInsets.all(16.0),
-            child: Text('© 2026 WeatherTracker. Всі права захищені.', style: TextStyle(color: AppColors.textGrey, fontSize: 12)),
+            child: Text(
+              '© 2026 WeatherTracker. Всі права захищені.',
+              style: TextStyle(color: AppColors.textGrey, fontSize: 12),
+            ),
           ),
         ],
       ),

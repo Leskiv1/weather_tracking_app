@@ -19,11 +19,19 @@ class SavedPlacesCard extends StatelessWidget {
         children: [
           Row(
             children: const [
-              Icon(Icons.location_on_outlined, color: AppColors.textGrey, size: 20),
+              Icon(
+                Icons.location_on_outlined,
+                color: AppColors.textGrey,
+                size: 20,
+              ),
               SizedBox(width: 8),
               Text(
                 'Збережені місця',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textDark,
+                ),
               ),
             ],
           ),
@@ -45,7 +53,13 @@ class SavedPlacesCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(name, style: const TextStyle(fontWeight: FontWeight.w500, color: AppColors.textDark)),
+          Text(
+            name,
+            style: const TextStyle(
+              fontWeight: FontWeight.w500,
+              color: AppColors.textDark,
+            ),
+          ),
           TextButton(
             onPressed: () {},
             style: TextButton.styleFrom(
@@ -53,7 +67,10 @@ class SavedPlacesCard extends StatelessWidget {
               padding: EdgeInsets.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            child: const Text('Видалити', style: TextStyle(color: AppColors.textGrey, fontSize: 14)),
+            child: const Text(
+              'Видалити',
+              style: TextStyle(color: AppColors.textGrey, fontSize: 14),
+            ),
           ),
         ],
       ),

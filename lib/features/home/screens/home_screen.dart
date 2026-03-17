@@ -44,7 +44,10 @@ class HomeScreen extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 32),
-                                const Expanded(flex: 1, child: SavedLocationsSidebar()),
+                                const Expanded(
+                                  flex: 1,
+                                  child: SavedLocationsSidebar(),
+                                ),
                               ],
                             );
                           }

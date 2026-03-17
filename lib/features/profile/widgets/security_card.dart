@@ -22,13 +22,27 @@ class SecurityCard extends StatelessWidget {
               children: const [
                 Row(
                   children: [
-                    Icon(Icons.shield_outlined, color: Color(0xFFDC2626), size: 20),
+                    Icon(
+                      Icons.shield_outlined,
+                      color: Color(0xFFDC2626),
+                      size: 20,
+                    ),
                     SizedBox(width: 8),
-                    Text('Безпека', style: TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(
+                      'Безпека',
+                      style: TextStyle(
+                        color: Color(0xFFDC2626),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                   ],
                 ),
                 SizedBox(height: 4),
-                Text('Вийти з акаунта на цьому пристрої', style: TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
+                Text(
+                  'Вийти з акаунта на цьому пристрої',
+                  style: TextStyle(color: Color(0xFFEF4444), fontSize: 12),
+                ),
               ],
             ),
           ),
@@ -42,7 +56,9 @@ class SecurityCard extends StatelessWidget {
               backgroundColor: Colors.white,
               side: const BorderSide(color: Color(0xFFFECACA)),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
           ),
         ],

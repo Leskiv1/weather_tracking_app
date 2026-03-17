@@ -31,35 +31,64 @@ class _SettingsCardState extends State<SettingsCard> {
               Icon(Icons.settings_outlined, color: AppColors.primaryBlue),
               SizedBox(width: 12),
               Expanded(
-                child: Text('Налаштування додатку', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                child: Text(
+                  'Налаштування додатку',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
           const SizedBox(height: 24),
           const Divider(color: AppColors.borderLight, height: 1),
           const SizedBox(height: 24),
-          const Text('Одиниці вимірювання', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const Text(
+            'Одиниці вимірювання',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
           const SizedBox(height: 16),
           Wrap(
             spacing: 24,
             runSpacing: 12,
             children: [
-              _buildRadio(isCelsius, 'Градуси Цельсія (°C)', () => setState(() => isCelsius = true)),
-              _buildRadio(!isCelsius, 'Фаренгейти (°F)', () => setState(() => isCelsius = false)),
+              _buildRadio(
+                isCelsius,
+                'Градуси Цельсія (°C)',
+                () => setState(() => isCelsius = true),
+              ),
+              _buildRadio(
+                !isCelsius,
+                'Фаренгейти (°F)',
+                () => setState(() => isCelsius = false),
+              ),
             ],
           ),
           const SizedBox(height: 32),
           Row(
             children: const [
-              Icon(Icons.notifications_none, color: AppColors.textGrey, size: 20),
+              Icon(
+                Icons.notifications_none,
+                color: AppColors.textGrey,
+                size: 20,
+              ),
               SizedBox(width: 8),
-              Text('Сповіщення', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(
+                'Сповіщення',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
             ],
           ),
           const SizedBox(height: 16),
-          _buildSwitchRow('Штормові попередження', stormWarnings, () => setState(() => stormWarnings = !stormWarnings)),
+          _buildSwitchRow(
+            'Штормові попередження',
+            stormWarnings,
+            () => setState(() => stormWarnings = !stormWarnings),
+          ),
           const SizedBox(height: 16),
-          _buildSwitchRow('Щоденний прогноз зранку', dailyForecast, () => setState(() => dailyForecast = !dailyForecast)),
+          _buildSwitchRow(
+            'Щоденний прогноз зранку',
+            dailyForecast,
+            () => setState(() => dailyForecast = !dailyForecast),
+          ),
           const SizedBox(height: 32),
           Wrap(
             spacing: 16,
@@ -70,8 +99,13 @@ class _SettingsCardState extends State<SettingsCard> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0F172A),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 child: const Text('Зберегти зміни'),
               ),
@@ -79,9 +113,14 @@ class _SettingsCardState extends State<SettingsCard> {
                 onPressed: () {},
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.textDark,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
                   side: const BorderSide(color: AppColors.borderLight),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 child: const Text('Скасувати'),
               ),
@@ -102,7 +141,9 @@ class _SettingsCardState extends State<SettingsCard> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+              selected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
               color: selected ? AppColors.primaryBlue : AppColors.textGrey,
             ),
             const SizedBox(width: 8),
@@ -117,7 +158,9 @@ class _SettingsCardState extends State<SettingsCard> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(child: Text(label, style: const TextStyle(color: AppColors.textDark))),
+        Expanded(
+          child: Text(label, style: const TextStyle(color: AppColors.textDark)),
+        ),
         const SizedBox(width: 16),
         GestureDetector(
           onTap: onTap,
@@ -133,7 +176,10 @@ class _SettingsCardState extends State<SettingsCard> {
             child: Container(
               width: 20,
               height: 20,
-              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
             ),
           ),
         ),

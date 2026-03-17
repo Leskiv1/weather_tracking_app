@@ -19,12 +19,20 @@ class UserInfoCard extends StatelessWidget {
           CircleAvatar(
             radius: 48,
             backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
-            child: const Icon(Icons.person_outline, size: 48, color: AppColors.primaryBlue),
+            child: const Icon(
+              Icons.person_outline,
+              size: 48,
+              color: AppColors.primaryBlue,
+            ),
           ),
           const SizedBox(height: 16),
           const Text(
             'Leskiv Nazar',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textDark),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textDark,
+            ),
           ),
           const SizedBox(height: 4),
           const Text(
@@ -40,7 +48,11 @@ class UserInfoCard extends StatelessWidget {
             ),
             child: const Text(
               'PRO Акаунт',
-              style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12),
+              style: TextStyle(
+                color: Colors.green,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
             ),
           ),
         ],

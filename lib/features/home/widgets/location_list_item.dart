@@ -40,12 +40,27 @@ class LocationListItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(city, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Text(condition, style: const TextStyle(color: AppColors.textGrey, fontSize: 12)),
+                Text(
+                  city,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  condition,
+                  style: const TextStyle(
+                    color: AppColors.textGrey,
+                    fontSize: 12,
+                  ),
+                ),
               ],
             ),
           ),
-          Text(temp, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24)),
+          Text(
+            temp,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+          ),
           const SizedBox(width: 8),
           const Icon(Icons.chevron_right, color: AppColors.textGrey),
         ],

@@ -21,18 +21,29 @@ class TopNavigation extends StatelessWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1100),
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32, vertical: 16),
+            padding: EdgeInsets.symmetric(
+              horizontal: isMobile ? 16 : 32,
+              vertical: 16,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.cloud_outlined, color: AppColors.primaryBlue, size: 28),
+                    const Icon(
+                      Icons.cloud_outlined,
+                      color: AppColors.primaryBlue,
+                      size: 28,
+                    ),
                     if (!isMobile) const SizedBox(width: 8),
                     if (!isMobile)
                       const Text(
                         'WeatherTracker',
-                        style: TextStyle(color: AppColors.primaryBlue, fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: AppColors.primaryBlue,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                   ],
                 ),
@@ -45,7 +56,12 @@ class TopNavigation extends StatelessWidget {
                       isMobile: isMobile,
                       onTap: () {
                         if (activeTab != 'Головна') {
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const HomeScreen(),
+                            ),
+                          );
                         }
                       },
                     ),
@@ -57,7 +73,12 @@ class TopNavigation extends StatelessWidget {
                       isMobile: isMobile,
                       onTap: () {
                         if (activeTab != 'Профіль') {
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ProfileScreen()));
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ProfileScreen(),
+                            ),
+                          );
                         }
                       },
                     ),
@@ -69,7 +90,12 @@ class TopNavigation extends StatelessWidget {
                       isMobile: isMobile,
                       onTap: () {
                         if (activeTab != 'Увійти') {
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginScreen(),
+                            ),
+                          );
                         }
                       },
                     ),
@@ -105,14 +131,23 @@ class _NavButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 16, vertical: 8),
+        padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 12 : 16,
+          vertical: 8,
+        ),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.primaryBlue.withValues(alpha: 0.1) : Colors.transparent,
+          color: isActive
+              ? AppColors.primaryBlue.withValues(alpha: 0.1)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           children: [
-            Icon(icon, color: isActive ? AppColors.primaryBlue : AppColors.textDark, size: 20),
+            Icon(
+              icon,
+              color: isActive ? AppColors.primaryBlue : AppColors.textDark,
+              size: 20,
+            ),
             if (!isMobile) const SizedBox(width: 8),
             if (!isMobile)
               Text(

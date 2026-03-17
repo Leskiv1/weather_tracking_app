@@ -50,19 +50,40 @@ class CurrentWeatherCard extends StatelessWidget {
           children: [
             Icon(Icons.location_on_outlined, color: Colors.white, size: 24),
             SizedBox(width: 8),
-            Text('Львів', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
+            Text(
+              'Львів',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
         SizedBox(height: 8),
-        Text('Переважно сонячно', style: TextStyle(color: Colors.white, fontSize: 16)),
+        Text(
+          'Переважно сонячно',
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
         SizedBox(height: 24),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('24°', style: TextStyle(color: Colors.white, fontSize: 72, fontWeight: FontWeight.bold, height: 1)),
+            Text(
+              '24°',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 72,
+                fontWeight: FontWeight.bold,
+                height: 1,
+              ),
+            ),
             Padding(
               padding: EdgeInsets.only(top: 8.0),
-              child: Text('C', style: TextStyle(color: Colors.white, fontSize: 24)),
+              child: Text(
+                'C',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
             ),
           ],
         ),
@@ -81,15 +102,39 @@ class CurrentWeatherCard extends StatelessWidget {
         children: [
           Row(
             children: const [
-              Expanded(child: _WeatherDetail(icon: Icons.air, label: 'ВІТЕР', value: '4.2 м/с')),
-              Expanded(child: _WeatherDetail(icon: Icons.water_drop_outlined, label: 'ВОЛОГІСТЬ', value: '58%')),
+              Expanded(
+                child: _WeatherDetail(
+                  icon: Icons.air,
+                  label: 'ВІТЕР',
+                  value: '4.2 м/с',
+                ),
+              ),
+              Expanded(
+                child: _WeatherDetail(
+                  icon: Icons.water_drop_outlined,
+                  label: 'ВОЛОГІСТЬ',
+                  value: '58%',
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 24),
           Row(
             children: const [
-              Expanded(child: _WeatherDetail(icon: Icons.compress, label: 'ТИСК', value: '1012 гПа')),
-              Expanded(child: _WeatherDetail(icon: Icons.wb_sunny_outlined, label: 'УФ ІНДЕКС', value: '4 (Сер)')),
+              Expanded(
+                child: _WeatherDetail(
+                  icon: Icons.compress,
+                  label: 'ТИСК',
+                  value: '1012 гПа',
+                ),
+              ),
+              Expanded(
+                child: _WeatherDetail(
+                  icon: Icons.wb_sunny_outlined,
+                  label: 'УФ ІНДЕКС',
+                  value: '4 (Сер)',
+                ),
+              ),
             ],
           ),
         ],
@@ -103,7 +148,11 @@ class _WeatherDetail extends StatelessWidget {
   final String label;
   final String value;
 
-  const _WeatherDetail({required this.icon, required this.label, required this.value});
+  const _WeatherDetail({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -117,12 +166,19 @@ class _WeatherDetail extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 10),
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 10,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
               Text(
                 value,
-                style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ],
