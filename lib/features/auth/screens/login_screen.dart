@@ -117,8 +117,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             hint: 'name@example.com',
                             icon: Icons.mail_outline,
                             validator: (value) {
-                              if (value == null || value.trim().isEmpty)
+                              if (value == null || value.trim().isEmpty) {
                                 return 'Введіть пошту';
+                              }
                               // Та сама перевірка, що і при реєстрації
                               final emailRegex = RegExp(
                                 r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
@@ -137,8 +138,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             icon: Icons.lock_outline,
                             isPassword: true,
                             validator: (value) {
-                              if (value == null || value.isEmpty)
+                              if (value == null || value.isEmpty) {
                                 return 'Введіть пароль';
+                              }
                               return null;
                             },
                             trailing: TextButton(

@@ -130,10 +130,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             hint: 'Ваше ім\'я',
                             icon: Icons.person_outline,
                             validator: (value) {
-                              if (value == null || value.trim().isEmpty)
+                              if (value == null || value.trim().isEmpty) {
                                 return 'Введіть ім\'я';
-                              if (value.trim().length < 2)
+                              }
+                              if (value.trim().length < 2) {
                                 return 'Ім\'я має містити мінімум 2 літери';
+                              }
                               // Перевірка на велику літеру на початку
                               if (!RegExp(r'^[A-ZА-ЯІЇЄҐ]').hasMatch(value)) {
                                 return 'Ім\'я має починатися з великої літери';
@@ -154,8 +156,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             hint: 'name@example.com',
                             icon: Icons.mail_outline,
                             validator: (value) {
-                              if (value == null || value.trim().isEmpty)
+                              if (value == null || value.trim().isEmpty) {
                                 return 'Введіть пошту';
+                              }
                               // Надійний регулярний вираз для валідації пошти
                               final emailRegex = RegExp(
                                 r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
@@ -175,8 +178,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             isPassword:
                                 true, // Це тепер автоматично включить іконку "ока"
                             validator: (value) {
-                              if (value == null || value.isEmpty)
+                              if (value == null || value.isEmpty) {
                                 return 'Введіть пароль';
+                              }
                               if (value.length < 8) return 'Мінімум 8 символів';
                               return null;
                             },
