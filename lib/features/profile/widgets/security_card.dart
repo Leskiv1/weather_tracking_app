@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../core/data/auth_repository.dart';
+import '../../auth/screens/login_screen.dart';
 
 class SecurityCard extends StatelessWidget {
   const SecurityCard({super.key});
@@ -48,7 +50,19 @@ class SecurityCard extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           OutlinedButton.icon(
-            onPressed: () {},
+            onPressed: () async {
+              // Викликаємо метод logout з нашого репозиторію
+              final authRepo = AuthRepositoryImpl();
+              await authRepo.logout();
+
+              // Перекидаємо користувача на екран логіну
+              if (context.mounted) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                );
+              }
+            },
             icon: const Icon(Icons.logout, size: 18),
             label: const Text('Вийти'),
             style: OutlinedButton.styleFrom(
