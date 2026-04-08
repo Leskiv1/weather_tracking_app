@@ -35,7 +35,7 @@ class ProfileScreen extends StatelessWidget {
                                 children: const [
                                   UserInfoCard(),
                                   SizedBox(height: 24),
-                                  SavedPlacesCard(),
+                                  ProfileSavedLocationsCard(),
                                 ],
                               ),
                             ),
@@ -57,7 +57,7 @@ class ProfileScreen extends StatelessWidget {
                         children: const [
                           UserInfoCard(),
                           SizedBox(height: 24),
-                          SavedPlacesCard(),
+                          ProfileSavedLocationsCard(),
                           SizedBox(height: 24),
                           SettingsCard(),
                           SizedBox(height: 24),
