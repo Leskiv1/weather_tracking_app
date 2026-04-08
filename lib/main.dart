@@ -50,7 +50,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     final user = await _authRepo.getCurrentUser();
     setState(() {
       // Якщо юзер є в базі, значить він залогований
-      _isLoggedIn = user != null; 
+      _isLoggedIn = user != null;
       _isLoading = false;
     });
   }

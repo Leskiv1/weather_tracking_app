@@ -43,13 +43,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 600;
-    
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
         children: [
           const TopNavigation(),
-          
+
           // --- ПЛАШКА ВІДСУТНОСТІ ІНТЕРНЕТУ ---
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
@@ -59,12 +59,16 @@ class _HomeScreenState extends State<HomeScreen> {
             child: const Center(
               child: Text(
                 'Немає з\'єднання з Інтернетом. Дані можуть бути неактуальними.',
-                style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
-          // ------------------------------------
 
+          // ------------------------------------
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.all(isMobile ? 16.0 : 32.0),

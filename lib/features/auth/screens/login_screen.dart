@@ -40,7 +40,10 @@ class _LoginScreenState extends State<LoginScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Відсутнє з\'єднання з Інтернетом!', style: TextStyle(color: Colors.white)),
+              content: Text(
+                'Відсутнє з\'єднання з Інтернетом!',
+                style: TextStyle(color: Colors.white),
+              ),
               backgroundColor: Colors.red,
             ),
           );

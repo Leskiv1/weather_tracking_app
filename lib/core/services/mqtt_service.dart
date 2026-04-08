@@ -16,8 +16,8 @@ class MqttService {
   Stream<String> get dataStream => _dataController.stream;
 
   VoidCallback? onDisconnectedCallback;
-  VoidCallback? onConnectedCallback; 
-  
+  VoidCallback? onConnectedCallback;
+
   Future<bool> connect() async {
     _client = MqttServerClient(_server, _clientIdentifier);
     _client.logging(on: false);
