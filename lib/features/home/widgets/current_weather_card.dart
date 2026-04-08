@@ -24,20 +24,22 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
 
     // 1. Коли MQTT сам розуміє, що відключився
     _mqttService.onDisconnectedCallback = () {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _isMqttConnected = false;
           _isConnecting = false;
         });
+      }
     };
 
     // 2. Коли MQTT сам відновив зв'язок
     _mqttService.onConnectedCallback = () {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _isMqttConnected = true;
           _isConnecting = false;
         });
+      }
     };
 
     // 3. ДОДАЄМО: Миттєва реакція на вмикання/вимикання Wi-Fi на телефоні
