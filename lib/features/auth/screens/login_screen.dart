@@ -6,6 +6,7 @@ import '../../../core/data/auth_repository.dart';
 import '../../profile/screens/profile_screen.dart';
 import '../widgets/auth_header.dart';
 import 'register_screen.dart';
+import '../../../core/services/network_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -32,6 +33,20 @@ class _LoginScreenState extends State<LoginScreen> {
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
+
+      final hasInternet = await NetworkService.isConnected;
+      if (!hasInternet) {
+        setState(() => _isLoading = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Відсутнє з\'єднання з Інтернетом!', style: TextStyle(color: Colors.white)),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return; // Зупиняємо виконання, далі не йдемо
+      }
 
       // Спроба логіну через репозиторій
       final success = await _authRepo.loginUser(

@@ -7,6 +7,7 @@ import '../../../core/models/user_model.dart';
 import '../widgets/auth_header.dart';
 import 'login_screen.dart';
 import '../../profile/screens/profile_screen.dart';
+import '../../../core/services/network_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -36,6 +37,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _handleRegister() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
+
+      final hasInternet = await NetworkService.isConnected;
+      if (!hasInternet) {
+        setState(() => _isLoading = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Відсутнє з\'єднання з Інтернетом!', style: TextStyle(color: Colors.white)),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return; // Зупиняємо виконання, далі не йдемо
+      }
 
       final newUser = UserModel(
         name: _nameController.text.trim(),
