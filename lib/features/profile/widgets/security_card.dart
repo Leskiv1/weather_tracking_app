@@ -5,6 +5,46 @@ import '../../auth/screens/login_screen.dart';
 class SecurityCard extends StatelessWidget {
   const SecurityCard({super.key});
 
+  // Метод, який показує діалог
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'Вихід з акаунта',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: const Text('Ви впевнені, що хочете вийти?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context), // Просто закриваємо діалог
+            child: const Text('Ні', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context); // Закриваємо діалог
+
+              // Робимо реальний вихід
+              final authRepo = AuthRepositoryImpl();
+              await authRepo.logout();
+
+              if (context.mounted) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                );
+              }
+            },
+            child: const Text(
+              'Так, вийти',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -50,19 +90,8 @@ class SecurityCard extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           OutlinedButton.icon(
-            onPressed: () async {
-              // Викликаємо метод logout з нашого репозиторію
-              final authRepo = AuthRepositoryImpl();
-              await authRepo.logout();
-
-              // Перекидаємо користувача на екран логіну
-              if (context.mounted) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                );
-              }
-            },
+            onPressed: () =>
+                _showLogoutDialog(context), // Викликаємо наш діалог
             icon: const Icon(Icons.logout, size: 18),
             label: const Text('Вийти'),
             style: OutlinedButton.styleFrom(

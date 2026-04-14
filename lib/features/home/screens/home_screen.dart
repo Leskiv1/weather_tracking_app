@@ -1,4 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import '../../../core/services/network_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/top_navigation.dart';
 import '../../../core/widgets/search_bar_widget.dart';
@@ -6,17 +9,66 @@ import '../widgets/current_weather_card.dart';
 import '../widgets/forecast_card.dart';
 import '../widgets/saved_locations_sidebar.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _hasInternet = true; // За замовчуванням вважаємо, що інтернет є
+  late StreamSubscription<InternetStatus> _internetSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    // Підписуємося на зміни статусу Інтернету
+    _internetSubscription = NetworkService.onStatusChange.listen((status) {
+      if (mounted) {
+        setState(() {
+          _hasInternet = status == InternetStatus.connected;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    // Відписуємося при закритті екрану, щоб звільнити пам'ять
+    _internetSubscription.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 600;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
         children: [
           const TopNavigation(),
+
+          // --- ПЛАШКА ВІДСУТНОСТІ ІНТЕРНЕТУ ---
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            height: _hasInternet ? 0 : 40,
+            width: double.infinity,
+            color: Colors.red.shade600,
+            child: const Center(
+              child: Text(
+                'Немає з\'єднання з Інтернетом. Дані можуть бути неактуальними.',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+
+          // ------------------------------------
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.all(isMobile ? 16.0 : 32.0),
