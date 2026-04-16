@@ -14,7 +14,7 @@ class CurrentWeatherCard extends StatefulWidget {
 class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
   final MqttService _mqttService = MqttService();
   final ApiService _apiService = ApiService(); // Сервіс для погоди
-  
+
   bool _isMqttConnected = false;
   bool _isConnecting = true;
   StreamSubscription? _internetSubscription;
@@ -33,24 +33,37 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
   // Виніс налаштування MQTT в окремий метод для чистоти коду
   void _setupMqttAndInternet() {
     _mqttService.onDisconnectedCallback = () {
-      if (mounted) setState(() { _isMqttConnected = false; _isConnecting = false; });
+      if (mounted)
+        setState(() {
+          _isMqttConnected = false;
+          _isConnecting = false;
+        });
     };
 
     _mqttService.onConnectedCallback = () {
-      if (mounted) setState(() { _isMqttConnected = true; _isConnecting = false; });
+      if (mounted)
+        setState(() {
+          _isMqttConnected = true;
+          _isConnecting = false;
+        });
     };
 
-    _internetSubscription = InternetConnection().onStatusChange.listen((status) {
+    _internetSubscription = InternetConnection().onStatusChange.listen((
+      status,
+    ) {
       if (mounted) {
         if (status == InternetStatus.disconnected) {
-          setState(() { _isMqttConnected = false; _isConnecting = false; });
+          setState(() {
+            _isMqttConnected = false;
+            _isConnecting = false;
+          });
         } else if (status == InternetStatus.connected) {
           if (!_isMqttConnected) {
             setState(() => _isConnecting = true);
             _connectToBroker();
           }
           // Якщо інтернет з'явився, а погоди ще немає - пробуємо знову
-          if (_weatherData == null) _fetchCurrentWeather(); 
+          if (_weatherData == null) _fetchCurrentWeather();
         }
       }
     });
@@ -62,7 +75,7 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
   Future<void> _fetchCurrentWeather() async {
     setState(() => _isLoadingWeather = true);
     final data = await _apiService.getCurrentWeather();
-    
+
     if (mounted) {
       setState(() {
         _weatherData = data;
@@ -73,7 +86,11 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
 
   Future<void> _connectToBroker() async {
     final connected = await _mqttService.connect();
-    if (mounted) setState(() { _isMqttConnected = connected; _isConnecting = false; });
+    if (mounted)
+      setState(() {
+        _isMqttConnected = connected;
+        _isConnecting = false;
+      });
   }
 
   @override
@@ -140,7 +157,11 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
                           children: [
                             Row(
                               children: const [
-                                Icon(Icons.location_on, color: Colors.white, size: 20),
+                                Icon(
+                                  Icons.location_on,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
                                 SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
@@ -157,15 +178,22 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
                             ),
                             const SizedBox(height: 8),
                             // Показуємо крутилку або текст опису
-                            _isLoadingWeather 
-                              ? const SizedBox(
-                                  height: 16, width: 16, 
-                                  child: CircularProgressIndicator(color: Colors.white70, strokeWidth: 2)
-                                )
-                              : Text(
-                                  desc,
-                                  style: const TextStyle(color: Colors.white70, fontSize: 16),
-                                ),
+                            _isLoadingWeather
+                                ? const SizedBox(
+                                    height: 16,
+                                    width: 16,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white70,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Text(
+                                    desc,
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 16,
+                                    ),
+                                  ),
                           ],
                         ),
                         const SizedBox(height: 24),
@@ -203,7 +231,11 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
                           children: [
                             Row(
                               children: const [
-                                Icon(Icons.sensors, color: Colors.white, size: 20),
+                                Icon(
+                                  Icons.sensors,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
                                 SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
@@ -222,17 +254,29 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
                             Row(
                               children: [
                                 Container(
-                                  width: 8, height: 8,
+                                  width: 8,
+                                  height: 8,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: _isConnecting ? Colors.orange : (_isMqttConnected ? Colors.greenAccent : Colors.redAccent),
+                                    color: _isConnecting
+                                        ? Colors.orange
+                                        : (_isMqttConnected
+                                              ? Colors.greenAccent
+                                              : Colors.redAccent),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    _isConnecting ? 'Підключення...' : (_isMqttConnected ? 'Підключено' : 'Немає з\'єднання'),
-                                    style: const TextStyle(color: Colors.white70, fontSize: 16),
+                                    _isConnecting
+                                        ? 'Підключення...'
+                                        : (_isMqttConnected
+                                              ? 'Підключено'
+                                              : 'Немає з\'єднання'),
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 16,
+                                    ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -246,13 +290,37 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
                             stream: _mqttService.dataStream,
                             builder: (context, snapshot) {
                               if (!snapshot.hasData) {
-                                return const Text('--°C', style: TextStyle(color: Colors.white54, fontSize: 56, fontWeight: FontWeight.bold, height: 1));
+                                return const Text(
+                                  '--°C',
+                                  style: TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 56,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1,
+                                  ),
+                                );
                               }
-                              return Text(snapshot.data!, style: const TextStyle(color: Colors.white, fontSize: 56, fontWeight: FontWeight.bold, height: 1));
+                              return Text(
+                                snapshot.data!,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 56,
+                                  fontWeight: FontWeight.bold,
+                                  height: 1,
+                                ),
+                              );
                             },
                           )
                         else
-                          const Text('--°C', style: TextStyle(color: Colors.white38, fontSize: 56, fontWeight: FontWeight.bold, height: 1)),
+                          const Text(
+                            '--°C',
+                            style: TextStyle(
+                              color: Colors.white38,
+                              fontSize: 56,
+                              fontWeight: FontWeight.bold,
+                              height: 1,
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -270,7 +338,11 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildWeatherDetail(Icons.air, 'ВІТЕР', '$wind м/с'),
-              _buildWeatherDetail(Icons.water_drop_outlined, 'ВОЛОГІСТЬ', '$humidity%'),
+              _buildWeatherDetail(
+                Icons.water_drop_outlined,
+                'ВОЛОГІСТЬ',
+                '$humidity%',
+              ),
               _buildWeatherDetail(Icons.compress, 'ТИСК', '$pressure гПа'),
             ],
           ),
@@ -289,15 +361,30 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
           children: [
             Text(
               label,
-              style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             // Показуємо крутилку або текст
-            _isLoadingWeather 
-              ? const SizedBox(height: 14, width: 14, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 1.5))
-              : Text(
-                  value,
-                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
-                ),
+            _isLoadingWeather
+                ? const SizedBox(
+                    height: 14,
+                    width: 14,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 1.5,
+                    ),
+                  )
+                : Text(
+                    value,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
           ],
         ),
       ],

@@ -13,16 +13,16 @@ abstract class IAuthRepository {
 // 2. РЕАЛЬНА реалізація через API + SharedPreferences
 class AuthRepositoryImpl implements IAuthRepository {
   static const String _keyCurrentUserEmail = 'current_user_email';
-  
+
   // Створюємо екземпляр нашого сервісу
-  final ApiService _apiService = ApiService(); 
+  final ApiService _apiService = ApiService();
 
   @override
   Future<bool> registerUser(UserModel user) async {
     // Тепер ми не зберігаємо пароль локально!
     // Ми стукаємо на реальний Python-сервер
     final result = await _apiService.register(user.email, user.password);
-    
+
     // Якщо сервер повернув success: true, значить все ок
     return result['success'] == true;
   }
@@ -37,7 +37,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       // ми залишаємо збереження email'а локально!
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_keyCurrentUserEmail, email);
-      
+
       // Більше ніяких паролів у SharedPreferences! Тільки email і токен.
       return true;
     }
@@ -49,7 +49,9 @@ class AuthRepositoryImpl implements IAuthRepository {
     final prefs = await SharedPreferences.getInstance();
 
     final currentEmail = prefs.getString(_keyCurrentUserEmail);
-    final token = prefs.getString('jwt_token'); // Перевіряємо, чи є токен від сервера
+    final token = prefs.getString(
+      'jwt_token',
+    ); // Перевіряємо, чи є токен від сервера
 
     // Автологін спрацює ТІЛЬКИ якщо є і email, і токен
     if (currentEmail != null && token != null) {
@@ -63,8 +65,8 @@ class AuthRepositoryImpl implements IAuthRepository {
   @override
   Future<void> logout() async {
     // 1. Видаляємо токен (через ApiService)
-    await _apiService.logout(); 
-    
+    await _apiService.logout();
+
     // 2. Видаляємо прив'язку до локацій
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyCurrentUserEmail);

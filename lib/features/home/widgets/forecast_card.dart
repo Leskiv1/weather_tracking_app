@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 // ПІДКЛЮЧАЄМО НАШ СЕРВІС
-import '../../../core/services/api_service.dart'; 
+import '../../../core/services/api_service.dart';
 
 class ForecastCard extends StatefulWidget {
   const ForecastCard({super.key});
@@ -27,21 +27,29 @@ class _ForecastCardState extends State<ForecastCard> {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final targetDate = DateTime(date.year, date.month, date.day);
-    
+
     final differenceInDays = targetDate.difference(today).inDays;
 
     if (differenceInDays == 0) return 'Сьогодні';
     if (differenceInDays == 1) return 'Завтра';
 
     switch (date.weekday) {
-      case 1: return 'Пн';
-      case 2: return 'Вт';
-      case 3: return 'Ср';
-      case 4: return 'Чт';
-      case 5: return 'Пт';
-      case 6: return 'Сб';
-      case 7: return 'Нд';
-      default: return '';
+      case 1:
+        return 'Пн';
+      case 2:
+        return 'Вт';
+      case 3:
+        return 'Ср';
+      case 4:
+        return 'Чт';
+      case 5:
+        return 'Пт';
+      case 6:
+        return 'Сб';
+      case 7:
+        return 'Нд';
+      default:
+        return '';
     }
   }
 
@@ -77,7 +85,7 @@ class _ForecastCardState extends State<ForecastCard> {
             ),
           ),
           const SizedBox(height: 24),
-          
+
           // ВПРОВАДЖУЄМО FUTURE BUILDER
           FutureBuilder<Map<String, dynamic>>(
             future: _forecastFuture,
@@ -92,7 +100,10 @@ class _ForecastCardState extends State<ForecastCard> {
               // Стан 2: Сталася помилка мережі (сервер впав тощо)
               if (snapshot.hasError) {
                 return const Center(
-                  child: Text('Помилка завантаження даних', style: TextStyle(color: Colors.red)),
+                  child: Text(
+                    'Помилка завантаження даних',
+                    style: TextStyle(color: Colors.red),
+                  ),
                 );
               }
 
@@ -103,7 +114,10 @@ class _ForecastCardState extends State<ForecastCard> {
                 return Center(
                   child: Text(
                     result['error'] ?? 'Увійдіть, щоб побачити прогноз',
-                    style: const TextStyle(color: AppColors.textGrey, fontSize: 14),
+                    style: const TextStyle(
+                      color: AppColors.textGrey,
+                      fontSize: 14,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 );
@@ -117,18 +131,25 @@ class _ForecastCardState extends State<ForecastCard> {
                   return SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: ConstrainedBox(
-                      constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                      constraints: BoxConstraints(
+                        minWidth: constraints.maxWidth,
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         // Генеруємо віджети динамічно з масиву АПІ
                         children: List.generate(forecastList.length, (index) {
                           final dayData = forecastList[index];
-                          
+
                           // Парсимо дані
-                          final String dayName = _formatDayName(dayData['date']);
-                          final IconData dayIcon = _getWeatherIcon(dayData['weather_code']);
-                          final String maxTemp = '${dayData['max_temp']}°'; // Беремо макс. температуру
-                          
+                          final String dayName = _formatDayName(
+                            dayData['date'],
+                          );
+                          final IconData dayIcon = _getWeatherIcon(
+                            dayData['weather_code'],
+                          );
+                          final String maxTemp =
+                              '${dayData['max_temp']}°'; // Беремо макс. температуру
+
                           // Віджет дня
                           Widget item = _ForecastItem(
                             day: dayName,
