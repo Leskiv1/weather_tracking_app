@@ -33,19 +33,21 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
   // Виніс налаштування MQTT в окремий метод для чистоти коду
   void _setupMqttAndInternet() {
     _mqttService.onDisconnectedCallback = () {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _isMqttConnected = false;
           _isConnecting = false;
         });
+      }
     };
 
     _mqttService.onConnectedCallback = () {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _isMqttConnected = true;
           _isConnecting = false;
         });
+      }
     };
 
     _internetSubscription = InternetConnection().onStatusChange.listen((
@@ -86,11 +88,12 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
 
   Future<void> _connectToBroker() async {
     final connected = await _mqttService.connect();
-    if (mounted)
+    if (mounted) {
       setState(() {
         _isMqttConnected = connected;
         _isConnecting = false;
       });
+    }
   }
 
   @override
