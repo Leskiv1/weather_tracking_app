@@ -1,47 +1,44 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
+import '../services/api_service.dart'; // Підключаємо наш новий сервіс!
 
-// 1. Наша абстракція (Інтерфейс)
+// 1. Наша абстракція (Інтерфейс) залишається БЕЗ ЗМІН
 abstract class IAuthRepository {
-  Future<bool> registerUser(UserModel user); // Змінили void на bool
+  Future<bool> registerUser(UserModel user);
   Future<bool> loginUser(String email, String password);
   Future<UserModel?> getCurrentUser();
   Future<void> logout();
 }
 
-// 2. Реалізація за допомогою SharedPreferences
+// 2. РЕАЛЬНА реалізація через API + SharedPreferences
 class AuthRepositoryImpl implements IAuthRepository {
-  // Ключ для збереження email поточного залогованого користувача
   static const String _keyCurrentUserEmail = 'current_user_email';
+  
+  // Створюємо екземпляр нашого сервісу
+  final ApiService _apiService = ApiService(); 
 
   @override
   Future<bool> registerUser(UserModel user) async {
-    final prefs = await SharedPreferences.getInstance();
-
-    // ПЕРЕВІРКА: чи існує вже пароль для цієї пошти?
-    final existingPassword = prefs.getString('password_${user.email}');
-    if (existingPassword != null) {
-      // Якщо так, значить користувач з таким email вже є
-      return false;
-    }
-
-    // Якщо ні — спокійно зберігаємо нові дані
-    await prefs.setString('name_${user.email}', user.name);
-    await prefs.setString('password_${user.email}', user.password);
-    return true; // Реєстрація успішна
+    // Тепер ми не зберігаємо пароль локально!
+    // Ми стукаємо на реальний Python-сервер
+    final result = await _apiService.register(user.email, user.password);
+    
+    // Якщо сервер повернув success: true, значить все ок
+    return result['success'] == true;
   }
 
   @override
   Future<bool> loginUser(String email, String password) async {
-    final prefs = await SharedPreferences.getInstance();
+    // Стукаємо на сервер. Якщо логін успішний, ApiService сам збереже JWT-токен
+    final result = await _apiService.login(email, password);
 
-    // Шукаємо пароль збережений саме для цього email
-    final savedPassword = prefs.getString('password_$email');
-
-    // Якщо пароль існує і співпадає з введеним
-    if (savedPassword != null && savedPassword == password) {
-      // Запам'ятовуємо, що цей користувач тепер залогований
+    if (result['success'] == true) {
+      // Для того, щоб твій LocationsRepository знав, хто залогований,
+      // ми залишаємо збереження email'а локально!
+      final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_keyCurrentUserEmail, email);
+      
+      // Більше ніяких паролів у SharedPreferences! Тільки email і токен.
       return true;
     }
     return false;
@@ -51,25 +48,25 @@ class AuthRepositoryImpl implements IAuthRepository {
   Future<UserModel?> getCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Дізнаємося, хто зараз залогований
     final currentEmail = prefs.getString(_keyCurrentUserEmail);
+    final token = prefs.getString('jwt_token'); // Перевіряємо, чи є токен від сервера
 
-    if (currentEmail == null) return null; // Ніхто не залогований
-
-    // Дістаємо дані саме для цього email
-    final name = prefs.getString('name_$currentEmail');
-    final password = prefs.getString('password_$currentEmail');
-
-    if (name != null && password != null) {
-      return UserModel(name: name, email: currentEmail, password: password);
+    // Автологін спрацює ТІЛЬКИ якщо є і email, і токен
+    if (currentEmail != null && token != null) {
+      // Повертаємо юзера. Пароль тепер неважливий, тому передаємо пустий рядок.
+      // (На сервері пароль зашифрований, ми його не знаємо і нам він не потрібен)
+      return UserModel(name: "User", email: currentEmail, password: "");
     }
-    return null;
+    return null; // Якщо токена немає - викидаємо на екран логіну
   }
 
   @override
   Future<void> logout() async {
+    // 1. Видаляємо токен (через ApiService)
+    await _apiService.logout(); 
+    
+    // 2. Видаляємо прив'язку до локацій
     final prefs = await SharedPreferences.getInstance();
-    // Видаляємо запис про те, що хтось залогований (але самі акаунти залишаються в пам'яті!)
     await prefs.remove(_keyCurrentUserEmail);
   }
 }

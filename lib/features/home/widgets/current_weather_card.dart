@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/services/mqtt_service.dart';
+import '../../../core/services/api_service.dart'; // ПІДКЛЮЧАЄМО АПІ
 import 'dart:async';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
@@ -12,81 +13,96 @@ class CurrentWeatherCard extends StatefulWidget {
 
 class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
   final MqttService _mqttService = MqttService();
+  final ApiService _apiService = ApiService(); // Сервіс для погоди
+  
   bool _isMqttConnected = false;
   bool _isConnecting = true;
-
-  // ДОДАЄМО: Змінна для зберігання підписки на інтернет
   StreamSubscription? _internetSubscription;
+
+  // Змінні для зберігання даних з АПІ
+  Map<String, dynamic>? _weatherData;
+  bool _isLoadingWeather = true;
 
   @override
   void initState() {
     super.initState();
+    _setupMqttAndInternet();
+    _fetchCurrentWeather(); // Завантажуємо погоду при старті
+  }
 
-    // 1. Коли MQTT сам розуміє, що відключився
+  // Виніс налаштування MQTT в окремий метод для чистоти коду
+  void _setupMqttAndInternet() {
     _mqttService.onDisconnectedCallback = () {
-      if (mounted) {
-        setState(() {
-          _isMqttConnected = false;
-          _isConnecting = false;
-        });
-      }
+      if (mounted) setState(() { _isMqttConnected = false; _isConnecting = false; });
     };
 
-    // 2. Коли MQTT сам відновив зв'язок
     _mqttService.onConnectedCallback = () {
-      if (mounted) {
-        setState(() {
-          _isMqttConnected = true;
-          _isConnecting = false;
-        });
-      }
+      if (mounted) setState(() { _isMqttConnected = true; _isConnecting = false; });
     };
 
-    // 3. ДОДАЄМО: Миттєва реакція на вмикання/вимикання Wi-Fi на телефоні
-    _internetSubscription = InternetConnection().onStatusChange.listen((
-      status,
-    ) {
+    _internetSubscription = InternetConnection().onStatusChange.listen((status) {
       if (mounted) {
         if (status == InternetStatus.disconnected) {
-          // Якщо Wi-Fi вимкнули - миттєво ставимо червону крапку
-          setState(() {
-            _isMqttConnected = false;
-            _isConnecting = false;
-          });
+          setState(() { _isMqttConnected = false; _isConnecting = false; });
         } else if (status == InternetStatus.connected) {
-          // Якщо Wi-Fi увімкнули, а ми ще не підключені - форсуємо підключення
           if (!_isMqttConnected) {
             setState(() => _isConnecting = true);
             _connectToBroker();
           }
+          // Якщо інтернет з'явився, а погоди ще немає - пробуємо знову
+          if (_weatherData == null) _fetchCurrentWeather(); 
         }
       }
     });
 
-    // Перше підключення при запуску
     _connectToBroker();
   }
 
-  Future<void> _connectToBroker() async {
-    final connected = await _mqttService.connect();
+  // Метод для походу на наш Python-сервер
+  Future<void> _fetchCurrentWeather() async {
+    setState(() => _isLoadingWeather = true);
+    final data = await _apiService.getCurrentWeather();
+    
     if (mounted) {
       setState(() {
-        _isMqttConnected = connected;
-        _isConnecting = false;
+        _weatherData = data;
+        _isLoadingWeather = false;
       });
     }
   }
 
+  Future<void> _connectToBroker() async {
+    final connected = await _mqttService.connect();
+    if (mounted) setState(() { _isMqttConnected = connected; _isConnecting = false; });
+  }
+
   @override
   void dispose() {
-    // Обов'язково скасовуємо підписку, коли картка зникає!
     _internetSubscription?.cancel();
     _mqttService.disconnect();
     super.dispose();
   }
 
+  // Хелпер для перетворення weather_code в текст
+  String _getWeatherDescription(int? code) {
+    if (code == null) return 'Дані відсутні';
+    if (code == 0) return 'Ясно';
+    if (code >= 1 && code <= 3) return 'Хмарно';
+    if (code >= 51 && code <= 67) return 'Дощ';
+    if (code >= 71 && code <= 77) return 'Сніг';
+    if (code >= 95 && code <= 99) return 'Гроза';
+    return 'Переважно сонячно';
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Дістаємо дані або ставимо заглушки, якщо АПІ ще вантажиться
+    final temp = _weatherData?['temp']?.toString() ?? '--';
+    final desc = _getWeatherDescription(_weatherData?['code']);
+    final wind = _weatherData?['wind']?.toString() ?? '--';
+    final humidity = _weatherData?['humidity']?.toString() ?? '--';
+    final pressure = _weatherData?['pressure']?.toString() ?? '--';
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -111,7 +127,7 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // --- ЛІВА ПОЛОВИНА ---
+                // --- ЛІВА ПОЛОВИНА (АПІ ПОГОДА) ---
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
@@ -124,11 +140,7 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
                           children: [
                             Row(
                               children: const [
-                                Icon(
-                                  Icons.location_on,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
+                                Icon(Icons.location_on, color: Colors.white, size: 20),
                                 SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
@@ -144,22 +156,22 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
                               ],
                             ),
                             const SizedBox(height: 8),
-                            const Text(
-                              'Переважно сонячно',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 16,
-                              ),
-                            ),
+                            // Показуємо крутилку або текст опису
+                            _isLoadingWeather 
+                              ? const SizedBox(
+                                  height: 16, width: 16, 
+                                  child: CircularProgressIndicator(color: Colors.white70, strokeWidth: 2)
+                                )
+                              : Text(
+                                  desc,
+                                  style: const TextStyle(color: Colors.white70, fontSize: 16),
+                                ),
                           ],
                         ),
-
-                        // ДОДАНО ГАРАНТОВАНИЙ ПРОПУСК
                         const SizedBox(height: 24),
-
-                        const Text(
-                          '24°C',
-                          style: TextStyle(
+                        Text(
+                          '$temp°C', // РЕАЛЬНА ТЕМПЕРАТУРА
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 56,
                             fontWeight: FontWeight.bold,
@@ -191,11 +203,7 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
                           children: [
                             Row(
                               children: const [
-                                Icon(
-                                  Icons.sensors,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
+                                Icon(Icons.sensors, color: Colors.white, size: 20),
                                 SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
@@ -214,29 +222,17 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
                             Row(
                               children: [
                                 Container(
-                                  width: 8,
-                                  height: 8,
+                                  width: 8, height: 8,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: _isConnecting
-                                        ? Colors.orange
-                                        : (_isMqttConnected
-                                              ? Colors.greenAccent
-                                              : Colors.redAccent),
+                                    color: _isConnecting ? Colors.orange : (_isMqttConnected ? Colors.greenAccent : Colors.redAccent),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    _isConnecting
-                                        ? 'Підключення...'
-                                        : (_isMqttConnected
-                                              ? 'Підключено'
-                                              : 'Немає з\'єднання'),
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 16,
-                                    ),
+                                    _isConnecting ? 'Підключення...' : (_isMqttConnected ? 'Підключено' : 'Немає з\'єднання'),
+                                    style: const TextStyle(color: Colors.white70, fontSize: 16),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -244,46 +240,19 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
                             ),
                           ],
                         ),
-
-                        // ТАКИЙ ЖЕ ПРОПУСК ДЛЯ СИМЕТРІЇ
                         const SizedBox(height: 24),
-
                         if (_isMqttConnected)
                           StreamBuilder<String>(
                             stream: _mqttService.dataStream,
                             builder: (context, snapshot) {
                               if (!snapshot.hasData) {
-                                return const Text(
-                                  '--°C',
-                                  style: TextStyle(
-                                    color: Colors.white54,
-                                    fontSize: 56,
-                                    fontWeight: FontWeight.bold,
-                                    height: 1,
-                                  ),
-                                );
+                                return const Text('--°C', style: TextStyle(color: Colors.white54, fontSize: 56, fontWeight: FontWeight.bold, height: 1));
                               }
-                              return Text(
-                                snapshot.data!,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 56,
-                                  fontWeight: FontWeight.bold,
-                                  height: 1,
-                                ),
-                              );
+                              return Text(snapshot.data!, style: const TextStyle(color: Colors.white, fontSize: 56, fontWeight: FontWeight.bold, height: 1));
                             },
                           )
                         else
-                          const Text(
-                            '--°C',
-                            style: TextStyle(
-                              color: Colors.white38,
-                              fontSize: 56,
-                              fontWeight: FontWeight.bold,
-                              height: 1,
-                            ),
-                          ),
+                          const Text('--°C', style: TextStyle(color: Colors.white38, fontSize: 56, fontWeight: FontWeight.bold, height: 1)),
                       ],
                     ),
                   ),
@@ -296,17 +265,13 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
           Container(height: 1, color: Colors.white.withValues(alpha: 0.2)),
           const SizedBox(height: 24),
 
-          // НИЖНЯ ЧАСТИНА (Деталі)
+          // НИЖНЯ ЧАСТИНА (Деталі з АПІ)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildWeatherDetail(Icons.air, 'ВІТЕР', '4.2 м/с'),
-              _buildWeatherDetail(
-                Icons.water_drop_outlined,
-                'ВОЛОГІСТЬ',
-                '58%',
-              ),
-              _buildWeatherDetail(Icons.compress, 'ТИСК', '1012 гПа'),
+              _buildWeatherDetail(Icons.air, 'ВІТЕР', '$wind м/с'),
+              _buildWeatherDetail(Icons.water_drop_outlined, 'ВОЛОГІСТЬ', '$humidity%'),
+              _buildWeatherDetail(Icons.compress, 'ТИСК', '$pressure гПа'),
             ],
           ),
         ],
@@ -324,20 +289,15 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
           children: [
             Text(
               label,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600),
             ),
-            Text(
-              value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            // Показуємо крутилку або текст
+            _isLoadingWeather 
+              ? const SizedBox(height: 14, width: 14, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 1.5))
+              : Text(
+                  value,
+                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                ),
           ],
         ),
       ],
