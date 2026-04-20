@@ -1,8 +1,68 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+// ПІДКЛЮЧАЄМО НАШ СЕРВІС
+import '../../../core/services/api_service.dart';
 
-class ForecastCard extends StatelessWidget {
+class ForecastCard extends StatefulWidget {
   const ForecastCard({super.key});
+
+  @override
+  State<ForecastCard> createState() => _ForecastCardState();
+}
+
+class _ForecastCardState extends State<ForecastCard> {
+  // Змінна, яка триматиме наш "потік" з майбутніми даними
+  late Future<Map<String, dynamic>> _forecastFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    // При запуску віджета ОДИН РАЗ викликаємо метод сервера
+    _forecastFuture = ApiService().getForecast();
+  }
+
+  // --- ХЕЛПЕР 1: Перетворює дату з АПІ у гарний текст ---
+  String _formatDayName(String dateString) {
+    final date = DateTime.parse(dateString);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final targetDate = DateTime(date.year, date.month, date.day);
+
+    final differenceInDays = targetDate.difference(today).inDays;
+
+    if (differenceInDays == 0) return 'Сьогодні';
+    if (differenceInDays == 1) return 'Завтра';
+
+    switch (date.weekday) {
+      case 1:
+        return 'Пн';
+      case 2:
+        return 'Вт';
+      case 3:
+        return 'Ср';
+      case 4:
+        return 'Чт';
+      case 5:
+        return 'Пт';
+      case 6:
+        return 'Сб';
+      case 7:
+        return 'Нд';
+      default:
+        return '';
+    }
+  }
+
+  // --- ХЕЛПЕР 2: Перетворює weather_code з АПІ на іконку ---
+  IconData _getWeatherIcon(int code) {
+    // Коди за стандартом WMO (World Meteorological Organization)
+    if (code == 0) return Icons.wb_sunny_outlined; // Ясно
+    if (code >= 1 && code <= 3) return Icons.cloud_outlined; // Хмарно
+    if (code >= 51 && code <= 67) return Icons.water_drop_outlined; // Дощ
+    if (code >= 71 && code <= 77) return Icons.ac_unit; // Сніг
+    if (code >= 95 && code <= 99) return Icons.flash_on; // Гроза
+    return Icons.cloud_queue; // За замовчуванням
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,47 +85,90 @@ class ForecastCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      _ForecastItem(
-                        day: 'Сьогодні',
-                        icon: Icons.wb_sunny_outlined,
-                        temp: '24°',
-                      ),
-                      SizedBox(width: 16),
-                      _ForecastItem(
-                        day: 'Завтра',
-                        icon: Icons.cloud_outlined,
-                        temp: '22°',
-                      ),
-                      SizedBox(width: 16),
-                      _ForecastItem(
-                        day: 'Середа',
-                        icon: Icons.cloudy_snowing,
-                        temp: '19°',
-                      ),
-                      SizedBox(width: 16),
-                      _ForecastItem(
-                        day: 'Четвер',
-                        icon: Icons.cloud_queue,
-                        temp: '21°',
-                      ),
-                      SizedBox(width: 16),
-                      _ForecastItem(
-                        day: 'П\'ятниця',
-                        icon: Icons.wb_sunny_outlined,
-                        temp: '25°',
-                      ),
-                    ],
+
+          // ВПРОВАДЖУЄМО FUTURE BUILDER
+          FutureBuilder<Map<String, dynamic>>(
+            future: _forecastFuture,
+            builder: (context, snapshot) {
+              // Стан 1: Дані ще вантажаться (показуємо крутилку)
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.textDark),
+                );
+              }
+
+              // Стан 2: Сталася помилка мережі (сервер впав тощо)
+              if (snapshot.hasError) {
+                return const Center(
+                  child: Text(
+                    'Помилка завантаження даних',
+                    style: TextStyle(color: Colors.red),
                   ),
-                ),
+                );
+              }
+
+              // Стан 3: Сервер відповів, перевіряємо чи успішно
+              final result = snapshot.data!;
+              if (result['success'] == false) {
+                // Найімовірніше, юзер не залогінений (немає токена)
+                return Center(
+                  child: Text(
+                    result['error'] ?? 'Увійдіть, щоб побачити прогноз',
+                    style: const TextStyle(
+                      color: AppColors.textGrey,
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              }
+
+              // Стан 4: ВСЕ УСПІШНО! Малюємо прогноз
+              final List forecastList = result['data']['forecast'];
+
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minWidth: constraints.maxWidth,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        // Генеруємо віджети динамічно з масиву АПІ
+                        children: List.generate(forecastList.length, (index) {
+                          final dayData = forecastList[index];
+
+                          // Парсимо дані
+                          final String dayName = _formatDayName(
+                            dayData['date'],
+                          );
+                          final IconData dayIcon = _getWeatherIcon(
+                            dayData['weather_code'],
+                          );
+                          final String maxTemp =
+                              '${dayData['max_temp']}°'; // Беремо макс. температуру
+
+                          // Віджет дня
+                          Widget item = _ForecastItem(
+                            day: dayName,
+                            icon: dayIcon,
+                            temp: maxTemp,
+                          );
+
+                          // Додаємо відступи між елементами, крім останнього
+                          if (index < forecastList.length - 1) {
+                            return Row(
+                              children: [item, const SizedBox(width: 16)],
+                            );
+                          }
+                          return item;
+                        }),
+                      ),
+                    ),
+                  );
+                },
               );
             },
           ),

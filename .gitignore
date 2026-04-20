@@ -43,3 +43,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# --- Python Backend ---
+weather_backend/.venv/
+weather_backend/.idea/
+weather_backend/**/__pycache__/
+weather_backend/*.sqlite
+weather_backend/weather.db
+weather_backend/.env
