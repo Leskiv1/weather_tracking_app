@@ -30,18 +30,14 @@ class AuthCubit extends Cubit<AuthState> {
   // НОВИЙ МЕТОД ДЛЯ РЕЄСТРАЦІЇ
   Future<void> register(String name, String email, String password) async {
     emit(AuthLoading()); // Крутимо крутилку
-    
+
     final hasInternet = await NetworkService.isConnected;
     if (!hasInternet) {
       emit(AuthError("Відсутнє з'єднання з Інтернетом!"));
       return;
     }
 
-    final newUser = UserModel(
-      name: name,
-      email: email,
-      password: password,
-    );
+    final newUser = UserModel(name: name, email: email, password: password);
 
     // Пробуємо зареєструвати
     final success = await authRepository.registerUser(newUser);

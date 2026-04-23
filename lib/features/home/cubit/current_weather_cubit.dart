@@ -40,28 +40,32 @@ class CurrentWeatherState {
 class CurrentWeatherCubit extends Cubit<CurrentWeatherState> {
   final ApiService apiService;
   final MqttService mqttService;
-  
+
   StreamSubscription? _internetSub;
   StreamSubscription? _mqttDataSub;
 
   CurrentWeatherCubit({required this.apiService, required this.mqttService})
-      : super(CurrentWeatherState(
+    : super(
+        CurrentWeatherState(
           // МИТТЄВО БЕРЕМО СТАН З ПАМ'ЯТІ СЕРВІСУ!
           isMqttConnected: mqttService.isConnected,
           mqttTemperature: mqttService.lastReceivedTemperature,
-          isConnecting: !mqttService.isConnected, 
-        )) {
+          isConnecting: !mqttService.isConnected,
+        ),
+      ) {
     _setupMqttAndInternet();
     fetchCurrentWeather();
   }
 
   void _setupMqttAndInternet() {
     mqttService.onDisconnectedCallback = () {
-      if (!isClosed) emit(state.copyWith(isMqttConnected: false, isConnecting: false));
+      if (!isClosed)
+        emit(state.copyWith(isMqttConnected: false, isConnecting: false));
     };
 
     mqttService.onConnectedCallback = () {
-      if (!isClosed) emit(state.copyWith(isMqttConnected: true, isConnecting: false));
+      if (!isClosed)
+        emit(state.copyWith(isMqttConnected: true, isConnecting: false));
     };
 
     _mqttDataSub = mqttService.dataStream.listen((temp) {
@@ -70,7 +74,7 @@ class CurrentWeatherCubit extends Cubit<CurrentWeatherState> {
 
     _internetSub = InternetConnection().onStatusChange.listen((status) {
       if (isClosed) return;
-      
+
       if (status == InternetStatus.disconnected) {
         emit(state.copyWith(isMqttConnected: false, isConnecting: false));
       } else if (status == InternetStatus.connected) {
@@ -92,24 +96,26 @@ class CurrentWeatherCubit extends Cubit<CurrentWeatherState> {
   Future<void> fetchCurrentWeather() async {
     if (!isClosed) emit(state.copyWith(isLoadingWeather: true));
     final data = await apiService.getCurrentWeather();
-    if (!isClosed) emit(state.copyWith(weatherData: data, isLoadingWeather: false));
+    if (!isClosed)
+      emit(state.copyWith(weatherData: data, isLoadingWeather: false));
   }
 
   Future<void> _connectToBroker() async {
     final connected = await mqttService.connect();
-    if (!isClosed) emit(state.copyWith(isMqttConnected: connected, isConnecting: false));
+    if (!isClosed)
+      emit(state.copyWith(isMqttConnected: connected, isConnecting: false));
   }
 
   @override
   Future<void> close() {
     _internetSub?.cancel();
     _mqttDataSub?.cancel();
-    
+
     mqttService.onDisconnectedCallback = null;
     mqttService.onConnectedCallback = null;
     // БІЛЬШЕ НІКОЛИ НЕ ВБИВАЄМО MQTT ПРИ ЗМІНІ ВКЛАДОК!
-    // mqttService.disconnect(); 
-    
+    // mqttService.disconnect();
+
     return super.close();
   }
 }

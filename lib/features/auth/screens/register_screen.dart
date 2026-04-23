@@ -74,10 +74,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           children: [
                             const AuthHeader(
                               title: 'Створити акаунт',
-                              subtitle: 'Приєднуйтесь до WeatherTracker сьогодні.',
+                              subtitle:
+                                  'Приєднуйтесь до WeatherTracker сьогодні.',
                             ),
                             const SizedBox(height: 32),
-                            
+
                             // --- ПОЛЯ ВВОДУ (Валідатори без змін) ---
                             CustomTextField(
                               controller: _nameController,
@@ -85,10 +86,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               hint: 'Ваше ім\'я',
                               icon: Icons.person_outline,
                               validator: (value) {
-                                if (value == null || value.trim().isEmpty) return 'Введіть ім\'я';
-                                if (value.trim().length < 2) return 'Ім\'я має містити мінімум 2 літери';
-                                if (!RegExp(r'^[A-ZА-ЯІЇЄҐ]').hasMatch(value)) return 'Ім\'я має починатися з великої літери';
-                                if (!RegExp(r'^[A-ZА-ЯІЇЄҐa-zа-яіїєґ\s\-]+$').hasMatch(value)) return 'Ім\'я може містити лише літери';
+                                if (value == null || value.trim().isEmpty)
+                                  return 'Введіть ім\'я';
+                                if (value.trim().length < 2)
+                                  return 'Ім\'я має містити мінімум 2 літери';
+                                if (!RegExp(r'^[A-ZА-ЯІЇЄҐ]').hasMatch(value))
+                                  return 'Ім\'я має починатися з великої літери';
+                                if (!RegExp(
+                                  r'^[A-ZА-ЯІЇЄҐa-zа-яіїєґ\s\-]+$',
+                                ).hasMatch(value))
+                                  return 'Ім\'я може містити лише літери';
                                 return null;
                               },
                             ),
@@ -99,9 +106,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               hint: 'name@example.com',
                               icon: Icons.mail_outline,
                               validator: (value) {
-                                if (value == null || value.trim().isEmpty) return 'Введіть пошту';
-                                final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                                if (!emailRegex.hasMatch(value)) return 'Введіть коректну електронну пошту';
+                                if (value == null || value.trim().isEmpty)
+                                  return 'Введіть пошту';
+                                final emailRegex = RegExp(
+                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                );
+                                if (!emailRegex.hasMatch(value))
+                                  return 'Введіть коректну електронну пошту';
                                 return null;
                               },
                             ),
@@ -113,8 +124,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               icon: Icons.lock_outline,
                               isPassword: true,
                               validator: (value) {
-                                if (value == null || value.isEmpty) return 'Введіть пароль';
-                                if (value.length < 8) return 'Мінімум 8 символів';
+                                if (value == null || value.isEmpty)
+                                  return 'Введіть пароль';
+                                if (value.length < 8)
+                                  return 'Мінімум 8 символів';
                                 return null;
                               },
                             ),
@@ -128,15 +141,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   // Обробка помилок та успіху
                                   if (state is AuthError) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(state.message, style: const TextStyle(color: Colors.white)), backgroundColor: Colors.red),
+                                      SnackBar(
+                                        content: Text(
+                                          state.message,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        backgroundColor: Colors.red,
+                                      ),
                                     );
                                   } else if (state is AuthSuccess) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Реєстрація успішна!', style: TextStyle(color: Colors.white)), backgroundColor: Colors.green),
+                                      const SnackBar(
+                                        content: Text(
+                                          'Реєстрація успішна!',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                        backgroundColor: Colors.green,
+                                      ),
                                     );
                                     Navigator.pushReplacement(
                                       context,
-                                      MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const ProfileScreen(),
+                                      ),
                                     );
                                   }
                                 },
@@ -145,33 +175,57 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                                   return ElevatedButton(
                                     // Відключаємо кнопку під час завантаження
-                                    onPressed: isLoading ? null : () {
-                                      if (_formKey.currentState!.validate()) {
-                                        // ВИКЛИКАЄМО ЛОГІКУ З CUBIT!
-                                        context.read<AuthCubit>().register(
-                                          _nameController.text.trim(),
-                                          _emailController.text.trim(),
-                                          _passwordController.text,
-                                        );
-                                      }
-                                    },
+                                    onPressed: isLoading
+                                        ? null
+                                        : () {
+                                            if (_formKey.currentState!
+                                                .validate()) {
+                                              // ВИКЛИКАЄМО ЛОГІКУ З CUBIT!
+                                              context
+                                                  .read<AuthCubit>()
+                                                  .register(
+                                                    _nameController.text.trim(),
+                                                    _emailController.text
+                                                        .trim(),
+                                                    _passwordController.text,
+                                                  );
+                                            }
+                                          },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppColors.primaryBlue,
                                       foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(vertical: 16),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
                                     ),
                                     child: isLoading
                                         ? const SizedBox(
-                                            height: 20, width: 20,
-                                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                            height: 20,
+                                            width: 20,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                              strokeWidth: 2,
+                                            ),
                                           )
                                         : Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: const [
-                                              Text('Зареєструватися', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                              Text(
+                                                'Зареєструватися',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
                                               SizedBox(width: 8),
-                                              Icon(Icons.check_circle_outline, size: 20),
+                                              Icon(
+                                                Icons.check_circle_outline,
+                                                size: 20,
+                                              ),
                                             ],
                                           ),
                                   );
@@ -182,15 +236,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             Wrap(
                               alignment: WrapAlignment.center,
                               children: [
-                                const Text('Вже маєте акаунт? ', style: TextStyle(color: AppColors.textGrey)),
+                                const Text(
+                                  'Вже маєте акаунт? ',
+                                  style: TextStyle(color: AppColors.textGrey),
+                                ),
                                 GestureDetector(
                                   onTap: () => Navigator.pushReplacement(
                                     context,
-                                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                                    MaterialPageRoute(
+                                      builder: (context) => const LoginScreen(),
+                                    ),
                                   ),
                                   child: const Text(
                                     'Увійти',
-                                    style: TextStyle(color: AppColors.primaryBlue, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      color: AppColors.primaryBlue,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -205,7 +267,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             const Padding(
               padding: EdgeInsets.all(16.0),
-              child: Text('© 2026 WeatherTracker. Всі права захищені.', style: TextStyle(color: AppColors.textGrey, fontSize: 12)),
+              child: Text(
+                '© 2026 WeatherTracker. Всі права захищені.',
+                style: TextStyle(color: AppColors.textGrey, fontSize: 12),
+              ),
             ),
           ],
         ),

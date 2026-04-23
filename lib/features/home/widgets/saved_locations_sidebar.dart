@@ -5,7 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/data/locations_repository.dart';
 
 // ПІДКЛЮЧАЄМО НАШІ НОВІ ФАЙЛИ
-import '../cubit/location_cubit.dart'; 
+import '../cubit/location_cubit.dart';
 
 class SavedLocationsSidebar extends StatefulWidget {
   const SavedLocationsSidebar({super.key});
@@ -26,10 +26,14 @@ class _SavedLocationsSidebarState extends State<SavedLocationsSidebar> {
 
   IconData _getIconForCondition(String condition) {
     switch (condition) {
-      case 'Сонячно': return Icons.wb_sunny_outlined;
-      case 'Хмарно': return Icons.cloud_outlined;
-      case 'Легкий дощ': return Icons.water_drop_outlined;
-      default: return Icons.wb_cloudy_outlined;
+      case 'Сонячно':
+        return Icons.wb_sunny_outlined;
+      case 'Хмарно':
+        return Icons.cloud_outlined;
+      case 'Легкий дощ':
+        return Icons.water_drop_outlined;
+      default:
+        return Icons.wb_cloudy_outlined;
     }
   }
 
@@ -45,7 +49,10 @@ class _SavedLocationsSidebarState extends State<SavedLocationsSidebar> {
           backgroundColor: AppColors.background,
           title: const Text(
             'Всі збережені локації',
-            style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: AppColors.textDark,
+            ),
           ),
           content: SizedBox(
             width: 400,
@@ -56,10 +63,13 @@ class _SavedLocationsSidebarState extends State<SavedLocationsSidebar> {
               builder: (context, state) {
                 if (state.locations.isEmpty) {
                   return const Center(
-                    child: Text('Немає збережених локацій', style: TextStyle(color: AppColors.textGrey)),
+                    child: Text(
+                      'Немає збережених локацій',
+                      style: TextStyle(color: AppColors.textGrey),
+                    ),
                   );
                 }
-                
+
                 return ListView.builder(
                   itemCount: state.locations.length,
                   itemBuilder: (context, index) {
@@ -68,19 +78,31 @@ class _SavedLocationsSidebarState extends State<SavedLocationsSidebar> {
                       color: AppColors.cardWhite,
                       margin: const EdgeInsets.only(bottom: 12),
                       child: ListTile(
-                        leading: Icon(_getIconForCondition(loc.condition), color: AppColors.primaryBlue),
-                        title: Text(loc.cityName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        leading: Icon(
+                          _getIconForCondition(loc.condition),
+                          color: AppColors.primaryBlue,
+                        ),
+                        title: Text(
+                          loc.cityName,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         subtitle: Text(loc.condition),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
                               '${loc.temperature}°',
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(width: 8),
                             IconButton(
-                              icon: const Icon(Icons.delete_outline, color: Colors.red),
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.red,
+                              ),
                               onPressed: () {
                                 // Просто кажемо Cubit-у видалити, і екран сам оновиться!
                                 locationCubit.deleteLocation(loc.id);
@@ -98,7 +120,10 @@ class _SavedLocationsSidebarState extends State<SavedLocationsSidebar> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Закрити', style: TextStyle(color: AppColors.primaryBlue)),
+              child: const Text(
+                'Закрити',
+                style: TextStyle(color: AppColors.primaryBlue),
+              ),
             ),
           ],
         );
@@ -110,10 +135,9 @@ class _SavedLocationsSidebarState extends State<SavedLocationsSidebar> {
   Widget build(BuildContext context) {
     // 1. Огортаємо сайдбар у BlocProvider
     return BlocProvider(
-      create: (context) => LocationCubit(
-        repository: context.read<LocationsRepositoryImpl>(),
-      ),
-      
+      create: (context) =>
+          LocationCubit(repository: context.read<LocationsRepositoryImpl>()),
+
       // 2. Слухаємо зміни стану
       child: BlocBuilder<LocationCubit, LocationState>(
         builder: (context, state) {
@@ -127,53 +151,88 @@ class _SavedLocationsSidebarState extends State<SavedLocationsSidebar> {
                 children: [
                   const Text(
                     'Збережені локації',
-                    style: TextStyle(color: AppColors.textDark, fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: AppColors.textDark,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   TextButton(
                     onPressed: () => _showAllLocationsDialog(context),
-                    child: const Text('Переглянути всі', style: TextStyle(color: AppColors.primaryBlue)),
+                    child: const Text(
+                      'Переглянути всі',
+                      style: TextStyle(color: AppColors.primaryBlue),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-              
+
               if (state.isLoading)
                 const Center(child: CircularProgressIndicator())
               else ...[
                 // Відображаємо Топ-3 локації
-                ...displayLocations.map((loc) => Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.cardWhite,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.borderLight),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(_getIconForCondition(loc.condition), color: AppColors.primaryBlue),
-                              const SizedBox(width: 16),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(loc.cityName, style: const TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold, fontSize: 16)),
-                                  Text(loc.condition, style: const TextStyle(color: AppColors.textGrey, fontSize: 12)),
-                                ],
+                ...displayLocations.map(
+                  (loc) => Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.cardWhite,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.borderLight),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              _getIconForCondition(loc.condition),
+                              color: AppColors.primaryBlue,
+                            ),
+                            const SizedBox(width: 16),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  loc.cityName,
+                                  style: const TextStyle(
+                                    color: AppColors.textDark,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                Text(
+                                  loc.condition,
+                                  style: const TextStyle(
+                                    color: AppColors.textGrey,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              '${loc.temperature}°',
+                              style: const TextStyle(
+                                color: AppColors.textDark,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
                               ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Text('${loc.temperature}°', style: const TextStyle(color: AppColors.textDark, fontSize: 20, fontWeight: FontWeight.bold)),
-                              const Icon(Icons.chevron_right, color: AppColors.textGrey),
-                            ],
-                          ),
-                        ],
-                      ),
-                    )),
+                            ),
+                            const Icon(
+                              Icons.chevron_right,
+                              color: AppColors.textGrey,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
 
                 // Кнопка додавання АБО поле вводу
                 AnimatedContainer(
@@ -181,7 +240,10 @@ class _SavedLocationsSidebarState extends State<SavedLocationsSidebar> {
                   decoration: BoxDecoration(
                     color: Colors.transparent,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.borderLight, style: BorderStyle.solid),
+                    border: Border.all(
+                      color: AppColors.borderLight,
+                      style: BorderStyle.solid,
+                    ),
                   ),
                   child: _isAdding
                       ? Padding(
@@ -193,10 +255,15 @@ class _SavedLocationsSidebarState extends State<SavedLocationsSidebar> {
                               hintText: 'Введіть назву міста...',
                               border: InputBorder.none,
                               suffixIcon: IconButton(
-                                icon: const Icon(Icons.check, color: AppColors.primaryBlue),
+                                icon: const Icon(
+                                  Icons.check,
+                                  color: AppColors.primaryBlue,
+                                ),
                                 onPressed: () {
                                   // Передаємо додавання у Cubit
-                                  context.read<LocationCubit>().addLocation(_cityController.text);
+                                  context.read<LocationCubit>().addLocation(
+                                    _cityController.text,
+                                  );
                                   _cityController.clear();
                                   setState(() => _isAdding = false);
                                 },
@@ -219,7 +286,13 @@ class _SavedLocationsSidebarState extends State<SavedLocationsSidebar> {
                               children: [
                                 Icon(Icons.add, color: AppColors.textGrey),
                                 SizedBox(width: 8),
-                                Text('Додати локацію', style: TextStyle(color: AppColors.textGrey, fontWeight: FontWeight.bold)),
+                                Text(
+                                  'Додати локацію',
+                                  style: TextStyle(
+                                    color: AppColors.textGrey,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ],
                             ),
                           ),

@@ -20,7 +20,11 @@ class ForecastCubit extends Cubit<ForecastState> {
       if (result['success'] == true) {
         emit(ForecastLoaded(result['data']['forecast']));
       } else {
-        emit(ForecastAuthError(result['error'] ?? 'Увійдіть, щоб побачити прогноз'));
+        emit(
+          ForecastAuthError(
+            result['error'] ?? 'Увійдіть, щоб побачити прогноз',
+          ),
+        );
       }
     } catch (e) {
       // Якщо сервер впав або немає інтернету

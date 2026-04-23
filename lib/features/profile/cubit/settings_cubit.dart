@@ -11,7 +11,11 @@ class SettingsState {
     this.dailyForecast = false,
   });
 
-  SettingsState copyWith({bool? isCelsius, bool? stormWarnings, bool? dailyForecast}) {
+  SettingsState copyWith({
+    bool? isCelsius,
+    bool? stormWarnings,
+    bool? dailyForecast,
+  }) {
     return SettingsState(
       isCelsius: isCelsius ?? this.isCelsius,
       stormWarnings: stormWarnings ?? this.stormWarnings,
@@ -24,6 +28,8 @@ class SettingsCubit extends Cubit<SettingsState> {
   SettingsCubit() : super(SettingsState());
 
   void setUnit(bool isCelsius) => emit(state.copyWith(isCelsius: isCelsius));
-  void toggleStormWarnings() => emit(state.copyWith(stormWarnings: !state.stormWarnings));
-  void toggleDailyForecast() => emit(state.copyWith(dailyForecast: !state.dailyForecast));
+  void toggleStormWarnings() =>
+      emit(state.copyWith(stormWarnings: !state.stormWarnings));
+  void toggleDailyForecast() =>
+      emit(state.copyWith(dailyForecast: !state.dailyForecast));
 }

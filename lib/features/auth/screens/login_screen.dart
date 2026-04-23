@@ -36,12 +36,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Огортаємо екран у BlocProvider, щоб він створив AuthCubit 
+    // 1. Огортаємо екран у BlocProvider, щоб він створив AuthCubit
     // і дістав репозиторій з нашого глобального "кошика"
     return BlocProvider(
-      create: (context) => AuthCubit(
-        authRepository: context.read<AuthRepositoryImpl>(),
-      ),
+      create: (context) =>
+          AuthCubit(authRepository: context.read<AuthRepositoryImpl>()),
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: Column(
@@ -73,7 +72,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             const AuthHeader(
                               title: 'З поверненням!',
-                              subtitle: 'Увійдіть, щоб переглянути свої збережені локації.',
+                              subtitle:
+                                  'Увійдіть, щоб переглянути свої збережені локації.',
                             ),
                             const SizedBox(height: 32),
                             CustomTextField(
@@ -82,9 +82,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               hint: 'name@example.com',
                               icon: Icons.mail_outline,
                               validator: (value) {
-                                if (value == null || value.trim().isEmpty) return 'Введіть пошту';
-                                final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                                if (!emailRegex.hasMatch(value)) return 'Введіть коректну електронну пошту';
+                                if (value == null || value.trim().isEmpty)
+                                  return 'Введіть пошту';
+                                final emailRegex = RegExp(
+                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                );
+                                if (!emailRegex.hasMatch(value))
+                                  return 'Введіть коректну електронну пошту';
                                 return null;
                               },
                             ),
@@ -96,7 +100,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               icon: Icons.lock_outline,
                               isPassword: true,
                               validator: (value) {
-                                if (value == null || value.isEmpty) return 'Введіть пароль';
+                                if (value == null || value.isEmpty)
+                                  return 'Введіть пароль';
                                 return null;
                               },
                               trailing: TextButton(
@@ -107,12 +112,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 child: const Text(
                                   'Забули пароль?',
-                                  style: TextStyle(color: AppColors.primaryBlue),
+                                  style: TextStyle(
+                                    color: AppColors.primaryBlue,
+                                  ),
                                 ),
                               ),
                             ),
                             const SizedBox(height: 32),
-                            
+
                             // 2. BLOC CONSUMER - Магія стейт менеджменту!
                             // Він слухає Cubit і реагує на зміни
                             SizedBox(
@@ -122,15 +129,32 @@ class _LoginScreenState extends State<LoginScreen> {
                                 listener: (context, state) {
                                   if (state is AuthError) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(state.message, style: const TextStyle(color: Colors.white)), backgroundColor: Colors.red),
+                                      SnackBar(
+                                        content: Text(
+                                          state.message,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        backgroundColor: Colors.red,
+                                      ),
                                     );
                                   } else if (state is AuthSuccess) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Успішний вхід!', style: TextStyle(color: Colors.white)), backgroundColor: Colors.green),
+                                      const SnackBar(
+                                        content: Text(
+                                          'Успішний вхід!',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                        backgroundColor: Colors.green,
+                                      ),
                                     );
                                     Navigator.pushReplacement(
                                       context,
-                                      MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const ProfileScreen(),
+                                      ),
                                     );
                                   }
                                 },
@@ -140,32 +164,53 @@ class _LoginScreenState extends State<LoginScreen> {
 
                                   return ElevatedButton(
                                     // Якщо вантажиться - відключаємо кнопку
-                                    onPressed: isLoading ? null : () {
-                                      if (_formKey.currentState!.validate()) {
-                                        // ВИКЛИКАЄМО ЛОГІКУ З CUBIT
-                                        context.read<AuthCubit>().login(
-                                          _emailController.text.trim(),
-                                          _passwordController.text,
-                                        );
-                                      }
-                                    },
+                                    onPressed: isLoading
+                                        ? null
+                                        : () {
+                                            if (_formKey.currentState!
+                                                .validate()) {
+                                              // ВИКЛИКАЄМО ЛОГІКУ З CUBIT
+                                              context.read<AuthCubit>().login(
+                                                _emailController.text.trim(),
+                                                _passwordController.text,
+                                              );
+                                            }
+                                          },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppColors.primaryBlue,
                                       foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(vertical: 16),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
                                     ),
                                     child: isLoading
                                         ? const SizedBox(
-                                            height: 20, width: 20,
-                                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                            height: 20,
+                                            width: 20,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                              strokeWidth: 2,
+                                            ),
                                           )
                                         : const Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
-                                              Text('Увійти', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                              Text(
+                                                'Увійти',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
                                               SizedBox(width: 8),
-                                              Icon(Icons.arrow_forward, size: 20),
+                                              Icon(
+                                                Icons.arrow_forward,
+                                                size: 20,
+                                              ),
                                             ],
                                           ),
                                   );
@@ -176,17 +221,26 @@ class _LoginScreenState extends State<LoginScreen> {
                             Wrap(
                               alignment: WrapAlignment.center,
                               children: [
-                                const Text('Немає акаунту? ', style: TextStyle(color: AppColors.textGrey)),
+                                const Text(
+                                  'Немає акаунту? ',
+                                  style: TextStyle(color: AppColors.textGrey),
+                                ),
                                 GestureDetector(
                                   onTap: () {
                                     Navigator.pushReplacement(
                                       context,
-                                      MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const RegisterScreen(),
+                                      ),
                                     );
                                   },
                                   child: const Text(
                                     'Зареєструватися',
-                                    style: TextStyle(color: AppColors.primaryBlue, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      color: AppColors.primaryBlue,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -201,7 +255,10 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const Padding(
               padding: EdgeInsets.all(16.0),
-              child: Text('© 2026 WeatherTracker. Всі права захищені.', style: TextStyle(color: AppColors.textGrey, fontSize: 12)),
+              child: Text(
+                '© 2026 WeatherTracker. Всі права захищені.',
+                style: TextStyle(color: AppColors.textGrey, fontSize: 12),
+              ),
             ),
           ],
         ),

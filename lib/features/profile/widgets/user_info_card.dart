@@ -23,7 +23,6 @@ class UserInfoCard extends StatelessWidget {
       // 1. ВИКОРИСТОВУЄМО BLOC BUILDER
       child: BlocBuilder<ProfileCubit, ProfileState>(
         builder: (context, state) {
-          
           if (state.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -52,14 +51,14 @@ class UserInfoCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 state.user?.email ?? 'Немає пошти', // Беремо з Cubit-а
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textGrey,
-                ),
+                style: const TextStyle(fontSize: 14, color: AppColors.textGrey),
               ),
               const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),

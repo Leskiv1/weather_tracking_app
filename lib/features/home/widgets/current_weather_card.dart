@@ -31,7 +31,6 @@ class CurrentWeatherCard extends StatelessWidget {
       // 2. ПІДПИСУЄМОСЬ НА ЗМІНИ СТАНУ
       child: BlocBuilder<CurrentWeatherCubit, CurrentWeatherState>(
         builder: (context, state) {
-          
           // Дістаємо дані зі стану (замість локальних змінних)
           final temp = state.weatherData?['temp']?.toString() ?? '--';
           final desc = _getWeatherDescription(state.weatherData?['code']);
@@ -76,12 +75,20 @@ class CurrentWeatherCard extends StatelessWidget {
                                 children: [
                                   Row(
                                     children: const [
-                                      Icon(Icons.location_on, color: Colors.white, size: 20),
+                                      Icon(
+                                        Icons.location_on,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
                                       SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
                                           'Львів',
-                                          style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
@@ -90,16 +97,31 @@ class CurrentWeatherCard extends StatelessWidget {
                                   const SizedBox(height: 8),
                                   state.isLoadingWeather
                                       ? const SizedBox(
-                                          height: 16, width: 16,
-                                          child: CircularProgressIndicator(color: Colors.white70, strokeWidth: 2),
+                                          height: 16,
+                                          width: 16,
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white70,
+                                            strokeWidth: 2,
+                                          ),
                                         )
-                                      : Text(desc, style: const TextStyle(color: Colors.white70, fontSize: 16)),
+                                      : Text(
+                                          desc,
+                                          style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 16,
+                                          ),
+                                        ),
                                 ],
                               ),
                               const SizedBox(height: 24),
                               Text(
                                 '$temp°C',
-                                style: const TextStyle(color: Colors.white, fontSize: 56, fontWeight: FontWeight.bold, height: 1),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 56,
+                                  fontWeight: FontWeight.bold,
+                                  height: 1,
+                                ),
                               ),
                             ],
                           ),
@@ -126,12 +148,20 @@ class CurrentWeatherCard extends StatelessWidget {
                                 children: [
                                   Row(
                                     children: const [
-                                      Icon(Icons.sensors, color: Colors.white, size: 20),
+                                      Icon(
+                                        Icons.sensors,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
                                       SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
                                           'Датчик',
-                                          style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
@@ -141,17 +171,29 @@ class CurrentWeatherCard extends StatelessWidget {
                                   Row(
                                     children: [
                                       Container(
-                                        width: 8, height: 8,
+                                        width: 8,
+                                        height: 8,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
-                                          color: state.isConnecting ? Colors.orange : (state.isMqttConnected ? Colors.greenAccent : Colors.redAccent),
+                                          color: state.isConnecting
+                                              ? Colors.orange
+                                              : (state.isMqttConnected
+                                                    ? Colors.greenAccent
+                                                    : Colors.redAccent),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
-                                          state.isConnecting ? 'Підключення...' : (state.isMqttConnected ? 'Підключено' : 'Немає з\'єднання'),
-                                          style: const TextStyle(color: Colors.white70, fontSize: 16),
+                                          state.isConnecting
+                                              ? 'Підключення...'
+                                              : (state.isMqttConnected
+                                                    ? 'Підключено'
+                                                    : 'Немає з\'єднання'),
+                                          style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 16,
+                                          ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
@@ -161,15 +203,26 @@ class CurrentWeatherCard extends StatelessWidget {
                               ),
                               const SizedBox(height: 24),
                               // МАГІЯ: БІЛЬШЕ НЕМАЄ STREAM BUILDER! Беремо температуру прямо зі state
-                              if (state.isMqttConnected && state.mqttTemperature != null)
+                              if (state.isMqttConnected &&
+                                  state.mqttTemperature != null)
                                 Text(
                                   state.mqttTemperature!,
-                                  style: const TextStyle(color: Colors.white, fontSize: 56, fontWeight: FontWeight.bold, height: 1),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 56,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1,
+                                  ),
                                 )
                               else
                                 const Text(
                                   '--°C',
-                                  style: TextStyle(color: Colors.white38, fontSize: 56, fontWeight: FontWeight.bold, height: 1),
+                                  style: TextStyle(
+                                    color: Colors.white38,
+                                    fontSize: 56,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1,
+                                  ),
                                 ),
                             ],
                           ),
@@ -180,16 +233,34 @@ class CurrentWeatherCard extends StatelessWidget {
                 ),
 
                 // --- НИЖНІЙ РОЗДІЛЮВАЧ ---
-                Container(height: 1, color: Colors.white.withValues(alpha: 0.2)),
+                Container(
+                  height: 1,
+                  color: Colors.white.withValues(alpha: 0.2),
+                ),
                 const SizedBox(height: 24),
 
                 // НИЖНЯ ЧАСТИНА (Деталі з АПІ)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildWeatherDetail(Icons.air, 'ВІТЕР', '$wind м/с', state.isLoadingWeather),
-                    _buildWeatherDetail(Icons.water_drop_outlined, 'ВОЛОГІСТЬ', '$humidity%', state.isLoadingWeather),
-                    _buildWeatherDetail(Icons.compress, 'ТИСК', '$pressure гПа', state.isLoadingWeather),
+                    _buildWeatherDetail(
+                      Icons.air,
+                      'ВІТЕР',
+                      '$wind м/с',
+                      state.isLoadingWeather,
+                    ),
+                    _buildWeatherDetail(
+                      Icons.water_drop_outlined,
+                      'ВОЛОГІСТЬ',
+                      '$humidity%',
+                      state.isLoadingWeather,
+                    ),
+                    _buildWeatherDetail(
+                      Icons.compress,
+                      'ТИСК',
+                      '$pressure гПа',
+                      state.isLoadingWeather,
+                    ),
                   ],
                 ),
               ],
@@ -200,7 +271,12 @@ class CurrentWeatherCard extends StatelessWidget {
     );
   }
 
-  Widget _buildWeatherDetail(IconData icon, String label, String value, bool isLoading) {
+  Widget _buildWeatherDetail(
+    IconData icon,
+    String label,
+    String value,
+    bool isLoading,
+  ) {
     return Row(
       children: [
         Icon(icon, color: Colors.white70, size: 24),
@@ -208,10 +284,31 @@ class CurrentWeatherCard extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600)),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             isLoading
-                ? const SizedBox(height: 14, width: 14, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 1.5))
-                : Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                ? const SizedBox(
+                    height: 14,
+                    width: 14,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 1.5,
+                    ),
+                  )
+                : Text(
+                    value,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
           ],
         ),
       ],

@@ -25,14 +25,22 @@ class ForecastCard extends StatelessWidget {
     if (differenceInDays == 1) return 'Завтра';
 
     switch (date.weekday) {
-      case 1: return 'Пн';
-      case 2: return 'Вт';
-      case 3: return 'Ср';
-      case 4: return 'Чт';
-      case 5: return 'Пт';
-      case 6: return 'Сб';
-      case 7: return 'Нд';
-      default: return '';
+      case 1:
+        return 'Пн';
+      case 2:
+        return 'Вт';
+      case 3:
+        return 'Ср';
+      case 4:
+        return 'Чт';
+      case 5:
+        return 'Пт';
+      case 6:
+        return 'Сб';
+      case 7:
+        return 'Нд';
+      default:
+        return '';
     }
   }
 
@@ -72,15 +80,16 @@ class ForecastCard extends StatelessWidget {
           BlocProvider(
             create: (context) => ForecastCubit(
               apiService: context.read<ApiService>(), // Беремо АПІ з "кошика"
-            )..loadForecast(), 
-            
+            )..loadForecast(),
+
             // 2. ВИКОРИСТОВУЄМО BLOC BUILDER ЗАМІСТЬ FUTURE BUILDER
             child: BlocBuilder<ForecastCubit, ForecastState>(
               builder: (context, state) {
-                
                 // Стан 1: Вантажимось
                 if (state is ForecastLoading || state is ForecastInitial) {
-                  return const Center(child: CircularProgressIndicator(color: AppColors.textDark));
+                  return const Center(
+                    child: CircularProgressIndicator(color: AppColors.textDark),
+                  );
                 }
 
                 // Стан 2: Немає токена (не залогінений)
@@ -88,7 +97,10 @@ class ForecastCard extends StatelessWidget {
                   return Center(
                     child: Text(
                       state.message,
-                      style: const TextStyle(color: AppColors.textGrey, fontSize: 14),
+                      style: const TextStyle(
+                        color: AppColors.textGrey,
+                        fontSize: 14,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   );
@@ -97,7 +109,10 @@ class ForecastCard extends StatelessWidget {
                 // Стан 3: Помилка сервера
                 if (state is ForecastError) {
                   return Center(
-                    child: Text(state.message, style: const TextStyle(color: Colors.red)),
+                    child: Text(
+                      state.message,
+                      style: const TextStyle(color: Colors.red),
+                    ),
                   );
                 }
 
@@ -110,12 +125,16 @@ class ForecastCard extends StatelessWidget {
                       return SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: ConstrainedBox(
-                          constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                          constraints: BoxConstraints(
+                            minWidth: constraints.maxWidth,
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: List.generate(forecastList.length, (index) {
+                            children: List.generate(forecastList.length, (
+                              index,
+                            ) {
                               final dayData = forecastList[index];
-                              
+
                               Widget item = _ForecastItem(
                                 day: _formatDayName(dayData['date']),
                                 icon: _getWeatherIcon(dayData['weather_code']),
@@ -123,7 +142,9 @@ class ForecastCard extends StatelessWidget {
                               );
 
                               if (index < forecastList.length - 1) {
-                                return Row(children: [item, const SizedBox(width: 16)]);
+                                return Row(
+                                  children: [item, const SizedBox(width: 16)],
+                                );
                               }
                               return item;
                             }),
@@ -149,19 +170,30 @@ class _ForecastItem extends StatelessWidget {
   final IconData icon;
   final String temp;
 
-  const _ForecastItem({required this.day, required this.icon, required this.temp});
+  const _ForecastItem({
+    required this.day,
+    required this.icon,
+    required this.temp,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(day, style: const TextStyle(color: AppColors.textGrey, fontSize: 14)),
+        Text(
+          day,
+          style: const TextStyle(color: AppColors.textGrey, fontSize: 14),
+        ),
         const SizedBox(height: 12),
         Icon(icon, color: AppColors.textDark, size: 32),
         const SizedBox(height: 12),
         Text(
           temp,
-          style: const TextStyle(color: AppColors.textDark, fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: AppColors.textDark,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ],
     );

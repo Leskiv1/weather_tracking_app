@@ -9,7 +9,7 @@ import '../widgets/forecast_card.dart';
 import '../widgets/saved_locations_sidebar.dart';
 
 // ПІДКЛЮЧАЄМО НАШ НОВИЙ CUBIT
-import '../../../core/cubit/network_cubit.dart'; 
+import '../../../core/cubit/network_cubit.dart';
 
 // ТЕПЕР ЦЕ STATELESS WIDGET!
 class HomeScreen extends StatelessWidget {

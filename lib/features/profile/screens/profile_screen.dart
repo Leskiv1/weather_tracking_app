@@ -19,12 +19,11 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 800;
-    
+
     // 1. ОГОРТАЄМО ЕКРАН У BLOC PROVIDER
     return BlocProvider(
-      create: (context) => ProfileCubit(
-        authRepository: context.read<AuthRepositoryImpl>(),
-      ),
+      create: (context) =>
+          ProfileCubit(authRepository: context.read<AuthRepositoryImpl>()),
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: Column(

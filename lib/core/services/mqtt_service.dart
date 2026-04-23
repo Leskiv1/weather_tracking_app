@@ -13,9 +13,12 @@ class MqttService {
 
   // --- ДОДАЛИ ПАМ'ЯТЬ ДЛЯ UI ---
   String? lastReceivedTemperature;
-  bool get isConnected => _client != null && _client!.connectionStatus!.state == MqttConnectionState.connected;
+  bool get isConnected =>
+      _client != null &&
+      _client!.connectionStatus!.state == MqttConnectionState.connected;
 
-  final StreamController<String> _dataController = StreamController<String>.broadcast();
+  final StreamController<String> _dataController =
+      StreamController<String>.broadcast();
   Stream<String> get dataStream => _dataController.stream;
 
   VoidCallback? onDisconnectedCallback;
@@ -27,11 +30,12 @@ class MqttService {
     if (_isConnecting) return false;
     _isConnecting = true;
 
-    final String clientIdentifier = 'naz_app_${DateTime.now().millisecondsSinceEpoch % 100000}';
-    
+    final String clientIdentifier =
+        'naz_app_${DateTime.now().millisecondsSinceEpoch % 100000}';
+
     _client = MqttServerClient(_server, clientIdentifier);
     _client!.logging(on: false); // Вимкнув логи, щоб не спамило в термінал
-    
+
     _client!.port = 1883;
     _client!.secure = false;
     _client!.useWebSocket = false;
@@ -44,7 +48,7 @@ class MqttService {
 
     final connMess = MqttConnectMessage()
         .withClientIdentifier(clientIdentifier)
-        .startClean(); 
+        .startClean();
 
     _client!.connectionMessage = connMess;
 
@@ -65,10 +69,12 @@ class MqttService {
 
       _client!.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
         final recMess = c![0].payload as MqttPublishMessage;
-        final payload = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-        
+        final payload = MqttPublishPayload.bytesToStringAsString(
+          recMess.payload.message,
+        );
+
         debugPrint('==== 🔥 MQTT: ОТРИМАНО ДАНІ: $payload ====');
-        
+
         // ЗБЕРІГАЄМО ОСТАННЄ ЗНАЧЕННЯ В ПАМ'ЯТЬ
         lastReceivedTemperature = payload;
         _dataController.add(payload);

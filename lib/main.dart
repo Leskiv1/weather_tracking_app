@@ -28,15 +28,12 @@ class WeatherTrackerApp extends StatelessWidget {
         RepositoryProvider(create: (context) => MqttService()),
         // AuthRepositoryImpl всередині себе використовує ApiService, тому це ОК
         RepositoryProvider(create: (context) => AuthRepositoryImpl()),
-        RepositoryProvider(create: (context) => LocationsRepositoryImpl()), 
+        RepositoryProvider(create: (context) => LocationsRepositoryImpl()),
       ],
       child: MaterialApp(
         title: 'WeatherTracker',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          fontFamily: 'Roboto',
-          useMaterial3: true,
-        ),
+        theme: ThemeData(fontFamily: 'Roboto', useMaterial3: true),
         home: const AuthWrapper(),
       ),
     );
@@ -65,9 +62,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
     // 2. БЕРЕМО РЕПОЗИТОРІЙ З "КОШИКА" замість створення нового!
     // context.read - це магія flutter_bloc, яка знаходить потрібний клас у дереві
     final authRepo = context.read<AuthRepositoryImpl>();
-    
+
     final user = await authRepo.getCurrentUser();
-    
+
     // Перевіряємо чи віджет ще існує перед викликом setState
     if (mounted) {
       setState(() {
