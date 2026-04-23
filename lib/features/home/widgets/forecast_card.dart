@@ -1,27 +1,18 @@
+// lib/features/home/widgets/forecast_card.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; // Додаємо BLoC
 import '../../../core/theme/app_colors.dart';
-// ПІДКЛЮЧАЄМО НАШ СЕРВІС
 import '../../../core/services/api_service.dart';
 
-class ForecastCard extends StatefulWidget {
+// Підключаємо наші нові файли
+import '../cubit/forecast_cubit.dart';
+import '../cubit/forecast_state.dart';
+
+// ТЕПЕР ЦЕ STATELESS WIDGET!
+class ForecastCard extends StatelessWidget {
   const ForecastCard({super.key});
 
-  @override
-  State<ForecastCard> createState() => _ForecastCardState();
-}
-
-class _ForecastCardState extends State<ForecastCard> {
-  // Змінна, яка триматиме наш "потік" з майбутніми даними
-  late Future<Map<String, dynamic>> _forecastFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    // При запуску віджета ОДИН РАЗ викликаємо метод сервера
-    _forecastFuture = ApiService().getForecast();
-  }
-
-  // --- ХЕЛПЕР 1: Перетворює дату з АПІ у гарний текст ---
+  // Хелпери залишаємо тут, бо це суто візуальна логіка перетворення тексту
   String _formatDayName(String dateString) {
     final date = DateTime.parse(dateString);
     final now = DateTime.now();
@@ -34,34 +25,24 @@ class _ForecastCardState extends State<ForecastCard> {
     if (differenceInDays == 1) return 'Завтра';
 
     switch (date.weekday) {
-      case 1:
-        return 'Пн';
-      case 2:
-        return 'Вт';
-      case 3:
-        return 'Ср';
-      case 4:
-        return 'Чт';
-      case 5:
-        return 'Пт';
-      case 6:
-        return 'Сб';
-      case 7:
-        return 'Нд';
-      default:
-        return '';
+      case 1: return 'Пн';
+      case 2: return 'Вт';
+      case 3: return 'Ср';
+      case 4: return 'Чт';
+      case 5: return 'Пт';
+      case 6: return 'Сб';
+      case 7: return 'Нд';
+      default: return '';
     }
   }
 
-  // --- ХЕЛПЕР 2: Перетворює weather_code з АПІ на іконку ---
   IconData _getWeatherIcon(int code) {
-    // Коди за стандартом WMO (World Meteorological Organization)
-    if (code == 0) return Icons.wb_sunny_outlined; // Ясно
-    if (code >= 1 && code <= 3) return Icons.cloud_outlined; // Хмарно
-    if (code >= 51 && code <= 67) return Icons.water_drop_outlined; // Дощ
-    if (code >= 71 && code <= 77) return Icons.ac_unit; // Сніг
-    if (code >= 95 && code <= 99) return Icons.flash_on; // Гроза
-    return Icons.cloud_queue; // За замовчуванням
+    if (code == 0) return Icons.wb_sunny_outlined;
+    if (code >= 1 && code <= 3) return Icons.cloud_outlined;
+    if (code >= 51 && code <= 67) return Icons.water_drop_outlined;
+    if (code >= 71 && code <= 77) return Icons.ac_unit;
+    if (code >= 95 && code <= 99) return Icons.flash_on;
+    return Icons.cloud_queue;
   }
 
   @override
@@ -86,91 +67,76 @@ class _ForecastCardState extends State<ForecastCard> {
           ),
           const SizedBox(height: 24),
 
-          // ВПРОВАДЖУЄМО FUTURE BUILDER
-          FutureBuilder<Map<String, dynamic>>(
-            future: _forecastFuture,
-            builder: (context, snapshot) {
-              // Стан 1: Дані ще вантажаться (показуємо крутилку)
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(color: AppColors.textDark),
-                );
-              }
+          // 1. ОГОРТАЄМО У BLOC PROVIDER
+          // Конструкція "..loadForecast()" означає: створити Cubit і ОДРАЗУ викликати метод завантаження
+          BlocProvider(
+            create: (context) => ForecastCubit(
+              apiService: context.read<ApiService>(), // Беремо АПІ з "кошика"
+            )..loadForecast(), 
+            
+            // 2. ВИКОРИСТОВУЄМО BLOC BUILDER ЗАМІСТЬ FUTURE BUILDER
+            child: BlocBuilder<ForecastCubit, ForecastState>(
+              builder: (context, state) {
+                
+                // Стан 1: Вантажимось
+                if (state is ForecastLoading || state is ForecastInitial) {
+                  return const Center(child: CircularProgressIndicator(color: AppColors.textDark));
+                }
 
-              // Стан 2: Сталася помилка мережі (сервер впав тощо)
-              if (snapshot.hasError) {
-                return const Center(
-                  child: Text(
-                    'Помилка завантаження даних',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                );
-              }
-
-              // Стан 3: Сервер відповів, перевіряємо чи успішно
-              final result = snapshot.data!;
-              if (result['success'] == false) {
-                // Найімовірніше, юзер не залогінений (немає токена)
-                return Center(
-                  child: Text(
-                    result['error'] ?? 'Увійдіть, щоб побачити прогноз',
-                    style: const TextStyle(
-                      color: AppColors.textGrey,
-                      fontSize: 14,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                );
-              }
-
-              // Стан 4: ВСЕ УСПІШНО! Малюємо прогноз
-              final List forecastList = result['data']['forecast'];
-
-              return LayoutBuilder(
-                builder: (context, constraints) {
-                  return SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minWidth: constraints.maxWidth,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        // Генеруємо віджети динамічно з масиву АПІ
-                        children: List.generate(forecastList.length, (index) {
-                          final dayData = forecastList[index];
-
-                          // Парсимо дані
-                          final String dayName = _formatDayName(
-                            dayData['date'],
-                          );
-                          final IconData dayIcon = _getWeatherIcon(
-                            dayData['weather_code'],
-                          );
-                          final String maxTemp =
-                              '${dayData['max_temp']}°'; // Беремо макс. температуру
-
-                          // Віджет дня
-                          Widget item = _ForecastItem(
-                            day: dayName,
-                            icon: dayIcon,
-                            temp: maxTemp,
-                          );
-
-                          // Додаємо відступи між елементами, крім останнього
-                          if (index < forecastList.length - 1) {
-                            return Row(
-                              children: [item, const SizedBox(width: 16)],
-                            );
-                          }
-                          return item;
-                        }),
-                      ),
+                // Стан 2: Немає токена (не залогінений)
+                if (state is ForecastAuthError) {
+                  return Center(
+                    child: Text(
+                      state.message,
+                      style: const TextStyle(color: AppColors.textGrey, fontSize: 14),
+                      textAlign: TextAlign.center,
                     ),
                   );
-                },
-              );
-            },
+                }
+
+                // Стан 3: Помилка сервера
+                if (state is ForecastError) {
+                  return Center(
+                    child: Text(state.message, style: const TextStyle(color: Colors.red)),
+                  );
+                }
+
+                // Стан 4: Успіх! Отримали дані
+                if (state is ForecastLoaded) {
+                  final forecastList = state.forecastList;
+
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: List.generate(forecastList.length, (index) {
+                              final dayData = forecastList[index];
+                              
+                              Widget item = _ForecastItem(
+                                day: _formatDayName(dayData['date']),
+                                icon: _getWeatherIcon(dayData['weather_code']),
+                                temp: '${dayData['max_temp']}°',
+                              );
+
+                              if (index < forecastList.length - 1) {
+                                return Row(children: [item, const SizedBox(width: 16)]);
+                              }
+                              return item;
+                            }),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }
+
+                return const SizedBox(); // На випадок непередбачених станів
+              },
+            ),
           ),
         ],
       ),
@@ -183,30 +149,19 @@ class _ForecastItem extends StatelessWidget {
   final IconData icon;
   final String temp;
 
-  const _ForecastItem({
-    required this.day,
-    required this.icon,
-    required this.temp,
-  });
+  const _ForecastItem({required this.day, required this.icon, required this.temp});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(
-          day,
-          style: const TextStyle(color: AppColors.textGrey, fontSize: 14),
-        ),
+        Text(day, style: const TextStyle(color: AppColors.textGrey, fontSize: 14)),
         const SizedBox(height: 12),
         Icon(icon, color: AppColors.textDark, size: 32),
         const SizedBox(height: 12),
         Text(
           temp,
-          style: const TextStyle(
-            color: AppColors.textDark,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(color: AppColors.textDark, fontSize: 18, fontWeight: FontWeight.bold),
         ),
       ],
     );
