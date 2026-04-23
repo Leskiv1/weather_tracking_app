@@ -59,13 +59,15 @@ class CurrentWeatherCubit extends Cubit<CurrentWeatherState> {
 
   void _setupMqttAndInternet() {
     mqttService.onDisconnectedCallback = () {
-      if (!isClosed)
+      if (!isClosed) {
         emit(state.copyWith(isMqttConnected: false, isConnecting: false));
+      }
     };
 
     mqttService.onConnectedCallback = () {
-      if (!isClosed)
+      if (!isClosed) {
         emit(state.copyWith(isMqttConnected: true, isConnecting: false));
+      }
     };
 
     _mqttDataSub = mqttService.dataStream.listen((temp) {
@@ -96,14 +98,16 @@ class CurrentWeatherCubit extends Cubit<CurrentWeatherState> {
   Future<void> fetchCurrentWeather() async {
     if (!isClosed) emit(state.copyWith(isLoadingWeather: true));
     final data = await apiService.getCurrentWeather();
-    if (!isClosed)
+    if (!isClosed) {
       emit(state.copyWith(weatherData: data, isLoadingWeather: false));
+    }
   }
 
   Future<void> _connectToBroker() async {
     final connected = await mqttService.connect();
-    if (!isClosed)
+    if (!isClosed) {
       emit(state.copyWith(isMqttConnected: connected, isConnecting: false));
+    }
   }
 
   @override

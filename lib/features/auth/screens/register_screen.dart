@@ -86,16 +86,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               hint: 'Ваше ім\'я',
                               icon: Icons.person_outline,
                               validator: (value) {
-                                if (value == null || value.trim().isEmpty)
+                                if (value == null || value.trim().isEmpty) {
                                   return 'Введіть ім\'я';
-                                if (value.trim().length < 2)
+                                }
+                                if (value.trim().length < 2) {
                                   return 'Ім\'я має містити мінімум 2 літери';
-                                if (!RegExp(r'^[A-ZА-ЯІЇЄҐ]').hasMatch(value))
+                                }
+                                if (!RegExp(r'^[A-ZА-ЯІЇЄҐ]').hasMatch(value)) {
                                   return 'Ім\'я має починатися з великої літери';
+                                }
                                 if (!RegExp(
                                   r'^[A-ZА-ЯІЇЄҐa-zа-яіїєґ\s\-]+$',
-                                ).hasMatch(value))
+                                ).hasMatch(value)) {
                                   return 'Ім\'я може містити лише літери';
+                                }
                                 return null;
                               },
                             ),
@@ -106,13 +110,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               hint: 'name@example.com',
                               icon: Icons.mail_outline,
                               validator: (value) {
-                                if (value == null || value.trim().isEmpty)
+                                if (value == null || value.trim().isEmpty) {
                                   return 'Введіть пошту';
+                                }
                                 final emailRegex = RegExp(
                                   r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                                 );
-                                if (!emailRegex.hasMatch(value))
+                                if (!emailRegex.hasMatch(value)) {
                                   return 'Введіть коректну електронну пошту';
+                                }
                                 return null;
                               },
                             ),
@@ -124,10 +130,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               icon: Icons.lock_outline,
                               isPassword: true,
                               validator: (value) {
-                                if (value == null || value.isEmpty)
+                                if (value == null || value.isEmpty) {
                                   return 'Введіть пароль';
-                                if (value.length < 8)
+                                }
+                                if (value.length < 8) {
                                   return 'Мінімум 8 символів';
+                                }
                                 return null;
                               },
                             ),
