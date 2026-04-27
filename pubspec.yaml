@@ -40,6 +40,11 @@ dependencies:
   http: ^1.6.0
   flutter_bloc: ^9.1.1
 
+  flashlight_plugin:
+    git:
+      url: https://github.com/Leskiv1/flashlight_plugin.git
+      ref: main
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

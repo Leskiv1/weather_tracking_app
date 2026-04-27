@@ -3,6 +3,8 @@ import '../theme/app_colors.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
+// ДОДАЄМО ІМПОРТ НАШОГО ХЕЛПЕРА
+import '../utils/flashlight_helper.dart';
 
 class TopNavigation extends StatelessWidget {
   final String activeTab;
@@ -32,11 +34,20 @@ class TopNavigation extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(
-                        Icons.cloud_outlined,
-                        color: AppColors.primaryBlue,
-                        size: 28,
+                      // === ОСЬ НАША СЕКРЕТНА КНОПКА ===
+                      GestureDetector(
+                        onLongPress: () {
+                          // При довгому натисканні викликаємо ліхтарик!
+                          FlashlightHelper.toggleFlashlight(context);
+                        },
+                        child: const Icon(
+                          Icons.cloud_outlined,
+                          color: AppColors.primaryBlue,
+                          size: 28,
+                        ),
                       ),
+
+                      // ==================================
                       if (!isMobile) const SizedBox(width: 8),
                       if (!isMobile)
                         const Text(
@@ -113,6 +124,7 @@ class TopNavigation extends StatelessWidget {
   }
 }
 
+// ... (клас _NavButton залишається без змін) ...
 class _NavButton extends StatelessWidget {
   final IconData icon;
   final String text;

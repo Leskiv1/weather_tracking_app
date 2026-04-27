@@ -129,6 +129,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
+  flashlight_plugin:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: main
+      resolved-ref: "92eb91577db8aed44d6b7a9ec6ede015691145c2"
+      url: "https://github.com/Leskiv1/flashlight_plugin.git"
+    source: git
+    version: "0.0.1"
   flutter:
     dependency: "direct main"
     description: flutter
