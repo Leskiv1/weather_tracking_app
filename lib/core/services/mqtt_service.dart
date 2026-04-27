@@ -1,15 +1,21 @@
+// lib/core/services/mqtt_service.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 
 class MqttService {
-  final String _server = 'test.mosquitto.org';
-  final String _clientIdentifier =
-      'nazar_iot_flutter_${DateTime.now().millisecondsSinceEpoch}';
+  final String _server = 'broker.emqx.io';
   final String topic = 'weathertracker/nazar/sensor1';
 
-  late MqttServerClient _client;
+  MqttServerClient? _client; // Зробили nullable
+  bool _isConnecting = false;
+
+  // --- ДОДАЛИ ПАМ'ЯТЬ ДЛЯ UI ---
+  String? lastReceivedTemperature;
+  bool get isConnected =>
+      _client != null &&
+      _client!.connectionStatus!.state == MqttConnectionState.connected;
 
   final StreamController<String> _dataController =
       StreamController<String>.broadcast();
@@ -19,77 +25,77 @@ class MqttService {
   VoidCallback? onConnectedCallback;
 
   Future<bool> connect() async {
-    _client = MqttServerClient(_server, _clientIdentifier);
-    _client.logging(on: false);
-    _client.port = 1883;
-    _client.keepAlivePeriod = 10;
-    _client.disconnectOnNoResponsePeriod = 5;
+    // ЗАХИСТ ВІД ДУБЛЮВАННЯ: Якщо вже підключені - просто повертаємо true
+    if (isConnected) return true;
+    if (_isConnecting) return false;
+    _isConnecting = true;
 
-    // --- МАГІЯ АВТОВІДНОВЛЕННЯ ---
-    _client.autoReconnect = true; // Дозволяємо клієнту самому шукати інтернет
-    _client.onAutoReconnected = _onAutoReconnected; // Що робити, коли знайшов
+    final String clientIdentifier =
+        'naz_app_${DateTime.now().millisecondsSinceEpoch % 100000}';
 
-    _client.onDisconnected = _onDisconnected;
+    _client = MqttServerClient(_server, clientIdentifier);
+    _client!.logging(on: false); // Вимкнув логи, щоб не спамило в термінал
+
+    _client!.port = 1883;
+    _client!.secure = false;
+    _client!.useWebSocket = false;
+
+    _client!.keepAlivePeriod = 10;
+    _client!.disconnectOnNoResponsePeriod = 5;
+    _client!.autoReconnect = true;
+    _client!.onAutoReconnected = _onAutoReconnected;
+    _client!.onDisconnected = _onDisconnected;
 
     final connMess = MqttConnectMessage()
-        .withClientIdentifier(_clientIdentifier)
-        .startClean()
-        .withWillQos(MqttQos.atLeastOnce);
+        .withClientIdentifier(clientIdentifier)
+        .startClean();
 
-    _client.connectionMessage = connMess;
+    _client!.connectionMessage = connMess;
 
     try {
-      await _client.connect();
+      await _client!.connect();
     } catch (e) {
-      _client.disconnect();
+      _client!.disconnect();
+      _isConnecting = false;
       return false;
     }
 
-    if (_client.connectionStatus!.state == MqttConnectionState.connected) {
-      debugPrint('MQTT: Підключено успішно!');
+    _isConnecting = false;
 
-      // Перша підписка при першому запуску
-      _client.subscribe(topic, MqttQos.atMostOnce);
+    if (_client!.connectionStatus!.state == MqttConnectionState.connected) {
+      debugPrint('==== ✅ MQTT: ПІДКЛЮЧЕНО ДО БРОКЕРА! ====');
 
-      _client.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
+      _client!.subscribe(topic, MqttQos.atLeastOnce);
+
+      _client!.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
         final recMess = c![0].payload as MqttPublishMessage;
         final payload = MqttPublishPayload.bytesToStringAsString(
           recMess.payload.message,
         );
+
+        debugPrint('==== 🔥 MQTT: ОТРИМАНО ДАНІ: $payload ====');
+
+        // ЗБЕРІГАЄМО ОСТАННЄ ЗНАЧЕННЯ В ПАМ'ЯТЬ
+        lastReceivedTemperature = payload;
         _dataController.add(payload);
       });
       return true;
     } else {
-      _client.disconnect();
+      _client!.disconnect();
       return false;
     }
   }
 
-  // --- МЕТОД, ЯКИЙ РЯТУЄ СИТУАЦІЮ ПІСЛЯ ОБРИВУ ---
   void _onAutoReconnected() {
-    debugPrint('MQTT: Автоматично перепідключено після обриву!');
-
-    // НАЙГОЛОВНІШЕ: Підписуємось на топік заново!
-    _client.subscribe(topic, MqttQos.atMostOnce);
-
-    // Кажемо UI, щоб зробив крапочку знову зеленою
-    Future.microtask(() {
-      if (onConnectedCallback != null) {
-        onConnectedCallback!();
-      }
-    });
+    _client?.subscribe(topic, MqttQos.atLeastOnce);
+    Future.microtask(() => onConnectedCallback?.call());
   }
 
   void _onDisconnected() {
-    debugPrint('MQTT: Відключено від брокера');
-    Future.microtask(() {
-      if (onDisconnectedCallback != null) {
-        onDisconnectedCallback!();
-      }
-    });
+    Future.microtask(() => onDisconnectedCallback?.call());
   }
 
   void disconnect() {
-    _client.disconnect();
+    _client?.disconnect();
   }
 }

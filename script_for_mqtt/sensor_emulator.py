@@ -2,7 +2,7 @@ import paho.mqtt.client as mqtt
 import time
 import random
 
-broker = "test.mosquitto.org"
+broker = "broker.emqx.io"
 port = 1883
 topic = "weathertracker/nazar/sensor1"
 client_id = "python_sensor_nazar_001"

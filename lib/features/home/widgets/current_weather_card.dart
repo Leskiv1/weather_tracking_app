@@ -1,109 +1,15 @@
+// lib/features/home/widgets/current_weather_card.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; // ПІДКЛЮЧАЄМО BLOC
+import '../../../core/services/api_service.dart';
 import '../../../core/services/mqtt_service.dart';
-import '../../../core/services/api_service.dart'; // ПІДКЛЮЧАЄМО АПІ
-import 'dart:async';
-import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import '../cubit/current_weather_cubit.dart'; // ПІДКЛЮЧАЄМО НАШ CUBIT
 
-class CurrentWeatherCard extends StatefulWidget {
+// ТЕПЕР ЦЕ STATELESS WIDGET!
+class CurrentWeatherCard extends StatelessWidget {
   const CurrentWeatherCard({super.key});
 
-  @override
-  State<CurrentWeatherCard> createState() => _CurrentWeatherCardState();
-}
-
-class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
-  final MqttService _mqttService = MqttService();
-  final ApiService _apiService = ApiService(); // Сервіс для погоди
-
-  bool _isMqttConnected = false;
-  bool _isConnecting = true;
-  StreamSubscription? _internetSubscription;
-
-  // Змінні для зберігання даних з АПІ
-  Map<String, dynamic>? _weatherData;
-  bool _isLoadingWeather = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _setupMqttAndInternet();
-    _fetchCurrentWeather(); // Завантажуємо погоду при старті
-  }
-
-  // Виніс налаштування MQTT в окремий метод для чистоти коду
-  void _setupMqttAndInternet() {
-    _mqttService.onDisconnectedCallback = () {
-      if (mounted) {
-        setState(() {
-          _isMqttConnected = false;
-          _isConnecting = false;
-        });
-      }
-    };
-
-    _mqttService.onConnectedCallback = () {
-      if (mounted) {
-        setState(() {
-          _isMqttConnected = true;
-          _isConnecting = false;
-        });
-      }
-    };
-
-    _internetSubscription = InternetConnection().onStatusChange.listen((
-      status,
-    ) {
-      if (mounted) {
-        if (status == InternetStatus.disconnected) {
-          setState(() {
-            _isMqttConnected = false;
-            _isConnecting = false;
-          });
-        } else if (status == InternetStatus.connected) {
-          if (!_isMqttConnected) {
-            setState(() => _isConnecting = true);
-            _connectToBroker();
-          }
-          // Якщо інтернет з'явився, а погоди ще немає - пробуємо знову
-          if (_weatherData == null) _fetchCurrentWeather();
-        }
-      }
-    });
-
-    _connectToBroker();
-  }
-
-  // Метод для походу на наш Python-сервер
-  Future<void> _fetchCurrentWeather() async {
-    setState(() => _isLoadingWeather = true);
-    final data = await _apiService.getCurrentWeather();
-
-    if (mounted) {
-      setState(() {
-        _weatherData = data;
-        _isLoadingWeather = false;
-      });
-    }
-  }
-
-  Future<void> _connectToBroker() async {
-    final connected = await _mqttService.connect();
-    if (mounted) {
-      setState(() {
-        _isMqttConnected = connected;
-        _isConnecting = false;
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _internetSubscription?.cancel();
-    _mqttService.disconnect();
-    super.dispose();
-  }
-
-  // Хелпер для перетворення weather_code в текст
+  // Хелпер залишається тут, бо це лише візуальне форматування
   String _getWeatherDescription(int? code) {
     if (code == null) return 'Дані відсутні';
     if (code == 0) return 'Ясно';
@@ -116,245 +22,261 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
 
   @override
   Widget build(BuildContext context) {
-    // Дістаємо дані або ставимо заглушки, якщо АПІ ще вантажиться
-    final temp = _weatherData?['temp']?.toString() ?? '--';
-    final desc = _getWeatherDescription(_weatherData?['code']);
-    final wind = _weatherData?['wind']?.toString() ?? '--';
-    final humidity = _weatherData?['humidity']?.toString() ?? '--';
-    final pressure = _weatherData?['pressure']?.toString() ?? '--';
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
+    // 1. СТВОРЮЄМО CUBIT, ПЕРЕДАЮЧИ СЕРВІСИ З "КОШИКА" MAIN.DART
+    return BlocProvider(
+      create: (context) => CurrentWeatherCubit(
+        apiService: context.read<ApiService>(),
+        mqttService: context.read<MqttService>(),
       ),
-      child: Column(
-        children: [
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      // 2. ПІДПИСУЄМОСЬ НА ЗМІНИ СТАНУ
+      child: BlocBuilder<CurrentWeatherCubit, CurrentWeatherState>(
+        builder: (context, state) {
+          // Дістаємо дані зі стану (замість локальних змінних)
+          final temp = state.weatherData?['temp']?.toString() ?? '--';
+          final desc = _getWeatherDescription(state.weatherData?['code']);
+          final wind = state.weatherData?['wind']?.toString() ?? '--';
+          final humidity = state.weatherData?['humidity']?.toString() ?? '--';
+          final pressure = state.weatherData?['pressure']?.toString() ?? '--';
+
+          return Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
               children: [
-                // --- ЛІВА ПОЛОВИНА (АПІ ПОГОДА) ---
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 32.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: const [
-                                Icon(
-                                  Icons.location_on,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                                SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'Львів',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // --- ЛІВА ПОЛОВИНА (АПІ ПОГОДА) ---
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 32.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: const [
+                                      Icon(
+                                        Icons.location_on,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                      SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'Львів',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            // Показуємо крутилку або текст опису
-                            _isLoadingWeather
-                                ? const SizedBox(
-                                    height: 16,
-                                    width: 16,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white70,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : Text(
-                                    desc,
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          '$temp°C', // РЕАЛЬНА ТЕМПЕРАТУРА
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 56,
-                            fontWeight: FontWeight.bold,
-                            height: 1,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // --- ВЕРТИКАЛЬНИЙ РОЗДІЛЮВАЧ ---
-                Container(
-                  width: 1,
-                  color: Colors.white.withValues(alpha: 0.3),
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                ),
-
-                // --- ПРАВА ПОЛОВИНА (MQTT) ---
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 32.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: const [
-                                Icon(
-                                  Icons.sensors,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                                SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'Датчик',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: _isConnecting
-                                        ? Colors.orange
-                                        : (_isMqttConnected
-                                              ? Colors.greenAccent
-                                              : Colors.redAccent),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    _isConnecting
-                                        ? 'Підключення...'
-                                        : (_isMqttConnected
-                                              ? 'Підключено'
-                                              : 'Немає з\'єднання'),
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 16,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        if (_isMqttConnected)
-                          StreamBuilder<String>(
-                            stream: _mqttService.dataStream,
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData) {
-                                return const Text(
-                                  '--°C',
-                                  style: TextStyle(
-                                    color: Colors.white54,
-                                    fontSize: 56,
-                                    fontWeight: FontWeight.bold,
-                                    height: 1,
-                                  ),
-                                );
-                              }
-                              return Text(
-                                snapshot.data!,
+                                  const SizedBox(height: 8),
+                                  state.isLoadingWeather
+                                      ? const SizedBox(
+                                          height: 16,
+                                          width: 16,
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white70,
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : Text(
+                                          desc,
+                                          style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              Text(
+                                '$temp°C',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 56,
                                   fontWeight: FontWeight.bold,
                                   height: 1,
                                 ),
-                              );
-                            },
-                          )
-                        else
-                          const Text(
-                            '--°C',
-                            style: TextStyle(
-                              color: Colors.white38,
-                              fontSize: 56,
-                              fontWeight: FontWeight.bold,
-                              height: 1,
-                            ),
+                              ),
+                            ],
                           ),
-                      ],
-                    ),
+                        ),
+                      ),
+
+                      // --- ВЕРТИКАЛЬНИЙ РОЗДІЛЮВАЧ ---
+                      Container(
+                        width: 1,
+                        color: Colors.white.withValues(alpha: 0.3),
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                      ),
+
+                      // --- ПРАВА ПОЛОВИНА (MQTT) ---
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 32.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: const [
+                                      Icon(
+                                        Icons.sensors,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                      SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'Датчик',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: state.isConnecting
+                                              ? Colors.orange
+                                              : (state.isMqttConnected
+                                                    ? Colors.greenAccent
+                                                    : Colors.redAccent),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          state.isConnecting
+                                              ? 'Підключення...'
+                                              : (state.isMqttConnected
+                                                    ? 'Підключено'
+                                                    : 'Немає з\'єднання'),
+                                          style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 16,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              // МАГІЯ: БІЛЬШЕ НЕМАЄ STREAM BUILDER! Беремо температуру прямо зі state
+                              if (state.isMqttConnected &&
+                                  state.mqttTemperature != null)
+                                Text(
+                                  state.mqttTemperature!,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 56,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1,
+                                  ),
+                                )
+                              else
+                                const Text(
+                                  '--°C',
+                                  style: TextStyle(
+                                    color: Colors.white38,
+                                    fontSize: 56,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+
+                // --- НИЖНІЙ РОЗДІЛЮВАЧ ---
+                Container(
+                  height: 1,
+                  color: Colors.white.withValues(alpha: 0.2),
+                ),
+                const SizedBox(height: 24),
+
+                // НИЖНЯ ЧАСТИНА (Деталі з АПІ)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildWeatherDetail(
+                      Icons.air,
+                      'ВІТЕР',
+                      '$wind м/с',
+                      state.isLoadingWeather,
+                    ),
+                    _buildWeatherDetail(
+                      Icons.water_drop_outlined,
+                      'ВОЛОГІСТЬ',
+                      '$humidity%',
+                      state.isLoadingWeather,
+                    ),
+                    _buildWeatherDetail(
+                      Icons.compress,
+                      'ТИСК',
+                      '$pressure гПа',
+                      state.isLoadingWeather,
+                    ),
+                  ],
                 ),
               ],
             ),
-          ),
-
-          // --- НИЖНІЙ ГОРИЗОНТАЛЬНИЙ РОЗДІЛЮВАЧ ---
-          Container(height: 1, color: Colors.white.withValues(alpha: 0.2)),
-          const SizedBox(height: 24),
-
-          // НИЖНЯ ЧАСТИНА (Деталі з АПІ)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildWeatherDetail(Icons.air, 'ВІТЕР', '$wind м/с'),
-              _buildWeatherDetail(
-                Icons.water_drop_outlined,
-                'ВОЛОГІСТЬ',
-                '$humidity%',
-              ),
-              _buildWeatherDetail(Icons.compress, 'ТИСК', '$pressure гПа'),
-            ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildWeatherDetail(IconData icon, String label, String value) {
+  Widget _buildWeatherDetail(
+    IconData icon,
+    String label,
+    String value,
+    bool isLoading,
+  ) {
     return Row(
       children: [
         Icon(icon, color: Colors.white70, size: 24),
@@ -370,8 +292,7 @@ class _CurrentWeatherCardState extends State<CurrentWeatherCard> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            // Показуємо крутилку або текст
-            _isLoadingWeather
+            isLoading
                 ? const SizedBox(
                     height: 14,
                     width: 14,

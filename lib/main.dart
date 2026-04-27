@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; // ПІДКЛЮЧАЄМО BLOC
+
+// Імпортуємо всі наші сервіси та репозиторії
+import 'core/services/api_service.dart';
+import 'core/services/mqtt_service.dart';
 import 'core/data/auth_repository.dart';
+import 'core/data/locations_repository.dart';
+
 import 'features/auth/screens/login_screen.dart';
 import 'features/home/screens/home_screen.dart';
 
 void main() {
-  // Обов'язково додаємо цей рядок для роботи з SharedPreferences до запуску додатку
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const WeatherTrackerApp());
 }
@@ -14,15 +20,22 @@ class WeatherTrackerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'WeatherTracker',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        fontFamily: 'Roboto', // Або будь-який інший стандартний шрифт
-        useMaterial3: true,
+    // 1. СТВОРЮЄМО MULTI REPOSITORY PROVIDER
+    // Це наш "кошик" з Одинаками (Singletons)
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider(create: (context) => ApiService()),
+        RepositoryProvider(create: (context) => MqttService()),
+        // AuthRepositoryImpl всередині себе використовує ApiService, тому це ОК
+        RepositoryProvider(create: (context) => AuthRepositoryImpl()),
+        RepositoryProvider(create: (context) => LocationsRepositoryImpl()),
+      ],
+      child: MaterialApp(
+        title: 'WeatherTracker',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(fontFamily: 'Roboto', useMaterial3: true),
+        home: const AuthWrapper(),
       ),
-      // Замість жорстко заданого HomeScreen викликаємо нашу розумну обгортку
-      home: const AuthWrapper(),
     );
   }
 }
@@ -36,7 +49,6 @@ class AuthWrapper extends StatefulWidget {
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
-  final _authRepo = AuthRepositoryImpl();
   bool _isLoading = true;
   bool _isLoggedIn = false;
 
@@ -47,24 +59,29 @@ class _AuthWrapperState extends State<AuthWrapper> {
   }
 
   Future<void> _checkLoginStatus() async {
-    final user = await _authRepo.getCurrentUser();
-    setState(() {
-      // Якщо юзер є в базі, значить він залогований
-      _isLoggedIn = user != null;
-      _isLoading = false;
-    });
+    // 2. БЕРЕМО РЕПОЗИТОРІЙ З "КОШИКА" замість створення нового!
+    // context.read - це магія flutter_bloc, яка знаходить потрібний клас у дереві
+    final authRepo = context.read<AuthRepositoryImpl>();
+
+    final user = await authRepo.getCurrentUser();
+
+    // Перевіряємо чи віджет ще існує перед викликом setState
+    if (mounted) {
+      setState(() {
+        _isLoggedIn = user != null;
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Поки перевіряємо сховище — показуємо екран завантаження
     if (_isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator(color: Colors.blue)),
       );
     }
 
-    // Якщо залогований — пускаємо на головну, якщо ні — на екран логіну
     return _isLoggedIn ? const HomeScreen() : const LoginScreen();
   }
 }
